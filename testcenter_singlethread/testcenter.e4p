@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Project SYSTEM "Project-5.1.dtd">
+<!-- eric project file for project testcenter -->
+<!-- Saved: 2019-11-29, 21:57:19 -->
+<!-- Copyright (C) 2019 ,  -->
+<Project version="5.1">
+  <Language>en_US</Language>
+  <Hash>67d558ec82051548712e14d3d00830395f995841</Hash>
+  <ProgLanguage mixed="1">Python3</ProgLanguage>
+  <ProjectType>PyQt5</ProjectType>
+  <Version>0.1</Version>
+  <Author></Author>
+  <Email></Email>
+  <Eol index="0"/>
+  <Sources>
+    <Source>Ui_mainwindow.py</Source>
+    <Source>Ui_spliter_layout.py</Source>
+    <Source>extension-output-#7.py</Source>
+    <Source>iconresource_rc.py</Source>
+    <Source>mainwindow.py</Source>
+    <Source>myui_mainwindow.py</Source>
+    <Source>pyserial_demo.py</Source>
+    <Source>subdialog/Ui_adddelaydialog.py</Source>
+    <Source>subdialog/Ui_addquickcommand.py</Source>
+    <Source>subdialog/Ui_characterrecognition.py</Source>
+    <Source>subdialog/Ui_commontestcommand.py</Source>
+    <Source>subdialog/Ui_fanandtemptest.py</Source>
+    <Source>subdialog/Ui_registerbaselinecheck.py</Source>
+    <Source>subdialog/Ui_sendcommand.py</Source>
+    <Source>subdialog/Ui_vlanconfig.py</Source>
+    <Source>subdialog/__init__.py</Source>
+    <Source>subdialog/adddelaydialog.py</Source>
+    <Source>subdialog/addquickcommand.py</Source>
+    <Source>subdialog/characterrecognition.py</Source>
+    <Source>subdialog/commontestcommand.py</Source>
+    <Source>subdialog/fanandtemptest.py</Source>
+    <Source>subdialog/registerbaselinecheck.py</Source>
+    <Source>subdialog/sendcommand.py</Source>
+    <Source>subdialog/ui_adddelaydialog.py</Source>
+    <Source>subdialog/ui_characterrecognition.py</Source>
+    <Source>subdialog/ui_sendcommand.py</Source>
+    <Source>subdialog/ui_vlanconfig.py</Source>
+    <Source>subdialog/vlanconfig.py</Source>
+    <Source>testcommandsessions.py</Source>
+    <Source>ui_mainwindow.py</Source>
+  </Sources>
+  <Forms>
+    <Form>mainwindow.ui</Form>
+    <Form>spliter_layout.ui</Form>
+    <Form>subdialog/addquickcommand.ui</Form>
+    <Form>subdialog/commontestcommand.ui</Form>
+    <Form>subdialog/fanandtemptest.ui</Form>
+    <Form>subdialog/registerbaselinecheck.ui</Form>
+    <Form>subdialog/adddelaydialog.ui</Form>
+    <Form>subdialog/characterrecognition.ui</Form>
+    <Form>subdialog/sendcommand.ui</Form>
+    <Form>subdialog/vlanconfig.ui</Form>
+  </Forms>
+  <Vcs>
+    <VcsType>None</VcsType>
+  </Vcs>
+  <FiletypeAssociations>
+    <FiletypeAssociation pattern="*.e4p" type="OTHERS"/>
+    <FiletypeAssociation pattern="*.idl" type="INTERFACES"/>
+    <FiletypeAssociation pattern="*.js" type="SOURCES"/>
+    <FiletypeAssociation pattern="*.md" type="OTHERS"/>
+    <FiletypeAssociation pattern="*.ptl" type="SOURCES"/>
+    <FiletypeAssociation pattern="*.py" type="SOURCES"/>
+    <FiletypeAssociation pattern="*.py2" type="SOURCES"/>
+    <FiletypeAssociation pattern="*.py3" type="SOURCES"/>
+    <FiletypeAssociation pattern="*.pyw" type="SOURCES"/>
+    <FiletypeAssociation pattern="*.pyw2" type="SOURCES"/>
+    <FiletypeAssociation pattern="*.pyw3" type="SOURCES"/>
+    <FiletypeAssociation pattern="*.qm" type="TRANSLATIONS"/>
+    <FiletypeAssociation pattern="*.qrc" type="RESOURCES"/>
+    <FiletypeAssociation pattern="*.rb" type="SOURCES"/>
+    <FiletypeAssociation pattern="*.rst" type="OTHERS"/>
+    <FiletypeAssociation pattern="*.ts" type="TRANSLATIONS"/>
+    <FiletypeAssociation pattern="*.txt" type="OTHERS"/>
+    <FiletypeAssociation pattern="*.ui" type="FORMS"/>
+    <FiletypeAssociation pattern="README" type="OTHERS"/>
+    <FiletypeAssociation pattern="README.*" type="OTHERS"/>
+  </FiletypeAssociations>
+</Project>

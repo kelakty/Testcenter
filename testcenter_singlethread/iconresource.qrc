@@ -1,0 +1,16 @@
+<RCC>
+  <qresource prefix="Graphics">
+    <file>images/addquickcommand.jpg</file>
+    <file>images/AddTest.jpg</file>
+    <file>images/AI.bmp</file>
+    <file>images/AI1.png</file>
+    <file>images/Delay.jpg</file>
+    <file>images/delete.png</file>
+    <file>images/ExpertScan.jpg</file>
+    <file>images/RuiJie.ico</file>
+    <file>images/scan.png</file>
+    <file>images/ScanText.jpg</file>
+    <file>images/SpecialScan.bmp</file>
+    <file>images/SpecialTest.png</file>
+  </qresource>
+</RCC>
