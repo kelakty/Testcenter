@@ -1,4 +1,4 @@
-
+﻿
 
 from PyQt5.QtCore import  QByteArray
 from datetime import datetime
@@ -40,3 +40,4 @@ print("time is :",time)
 
 print(date.year, date.month, date.day,time.hour,time.minute,time.second)
 print(datetime.now())
+print(datetime.year)
