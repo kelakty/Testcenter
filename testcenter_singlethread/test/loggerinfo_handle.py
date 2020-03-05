@@ -1,4 +1,4 @@
-﻿
+
 
 from PyQt5.QtCore import  QByteArray
 from datetime import datetime
