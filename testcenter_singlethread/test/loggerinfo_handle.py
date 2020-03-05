@@ -37,6 +37,7 @@ time=datetime.now().time()
 print("data is :",date)
 print("time is :",time)
 
+
 print(date.year, date.month, date.day,time.hour,time.minute,time.second)
 print(datetime.now())
 print(datetime.minute)
