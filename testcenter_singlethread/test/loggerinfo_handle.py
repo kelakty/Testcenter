@@ -26,6 +26,7 @@ for x in serialreaddata.decode('gb2312'):
 if new_serialdata != "":
     serialdata_list.append(new_serialdata)
 
+
 print(serialdata_list)
 
 for x in serialdata_list:
