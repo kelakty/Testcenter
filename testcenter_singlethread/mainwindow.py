@@ -31,19 +31,33 @@ import re
 from ui_mainwindow import Ui_MainWindow
 from myui_mainwindow import MyUi_MainWindow
 from subdialog.vlanconfig import VlanConfig
-from subdialog.addsendcommand import SendCommandDialog
+from subdialog.addsendcommand import AddSendCommandWidgetandWaitingEcho
 from subdialog.adddelaydialog import AddDelayDialog
 from subdialog.characterrecognition import DialogCharacterRecognition
 from subdialog.testcommandillustration import TestCommandIllustration
 from subdialog.registerbaselinecheck import RegisterBaseLineCheck
 from subdialog.fanandtemptest import FanAndTempTest
 from subdialog.addquickcommand import AddQuickCommand
+from subdialog.selectpythonscript import selectpythonscript
+from AutomationScript import CRT
 
 from globalvariable import GlobalVariable
 from testcommandsessions import TestCommandSession
 # from testcommandsessions import testcommandlist
 # from testcommandsessions import commandlist_num
 # from testcommandsessions import case_num
+
+import logging
+from logging import handlers
+from datetime import datetime
+
+logger= logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+handler= logging.handlers.TimedRotatingFileHandler('Testcenter.log',when='midnight',interval=1,backupCount=30)
+handler.setLevel(logging.INFO)
+handler.setFormatter(logging.Formatter('%(asctime)s-%(levelname)s ： %(message)s'))
+logger.addHandler(handler)
+
 
 encodingType=GlobalVariable.defaultEncodingType
 
@@ -57,10 +71,15 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         @param parent reference to the parent widget
         @type QWidget
         """
+        
         super(MainWindow, self).__init__(*args, **kwargs)
+        #QtWidgets.QMainWindow.__init__(self, None, QtCore.Qt.WindowStaysOnTopHint)#加上该句后窗口始终在其他所有窗口上层显示
         self.setupUi(self)
         self.setupUi2(self)
         # self.serialreaddata=""
+        GlobalVariable.mainwindow=self
+        # self.crt=CRT()
+        # self.crt.setMain(self)
 
         self.toolBar_quickcommand.setContextMenuPolicy(Qt.CustomContextMenu)
         #加载初始化配置文件,初始化窗体等
@@ -104,9 +123,9 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         '''
 
 
-        self._serial = QSerialPort(self)  # 用于连接串口的对象
-        self._serial.setReadBufferSize(4096) #设置内部接收缓存区大小
-        self._serial.readyRead.connect(self.onReadyRead)  # 绑定数据读取信号
+        self.serial = QSerialPort(self)  # 用于连接串口的对象
+        self.serial.setReadBufferSize(4096) #设置内部接收缓存区大小
+        self.serial.readyRead.connect(self.onReadyRead)  # 绑定数据读取信号
         #self._serial.getData.connect(self.on_send_button_clicked)  # 绑定写数据信号
         # 首先获取可用的串口列表
         self.getAvailablePorts()
@@ -205,10 +224,11 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
     @pyqtSlot()
     def on_open_close_buttom_clicked(self):
         # 打开或关闭串口按钮
-        if self._serial.isOpen():
+        if self.serial.isOpen():
             # 如果串口是打开状态则关闭
-            self._serial.close()
+            self.serial.close()
             self.console_terminal.append('串口已关闭')        #textBrowser.append('串口已关闭')
+            logger.info("串口已关闭")
             self.open_close_buttom.setText('点击打开串口')
             #self.labelStatus.setProperty('isOn', False)
             #self.labelStatus.style().polish(self.labelStatus)  # 刷新样式
@@ -223,31 +243,32 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         print("port:",port)
 #         self._serial.setPort(port)
         # 根据名字设置串口（也可以用上面的函数）
-        self._serial.setPortName(port.systemLocation())
+        self.serial.setPortName(port.systemLocation())
         print("syslocation:",port.systemLocation())
         # 设置波特率
-        self._serial.setBaudRate(  # 动态获取,类似QSerialPort::Baud9600这样的吧
+        self.serial.setBaudRate(  # 动态获取,类似QSerialPort::Baud9600这样的吧
             getattr(QSerialPort, 'Baud' + self.baud_rate_option.currentText()))
         # 设置校验位
-        self._serial.setParity(  # QSerialPort::NoParity
+        self.serial.setParity(  # QSerialPort::NoParity
             getattr(QSerialPort, self.checksum_bits.currentText() + 'Parity'))
         # 设置数据位
-        self._serial.setDataBits(  # QSerialPort::Data8
+        self.serial.setDataBits(  # QSerialPort::Data8
             getattr(QSerialPort, 'Data' + self.data_bits.currentText()))
         # 设置停止位
-        self._serial.setStopBits(  # QSerialPort::Data8
+        self.serial.setStopBits(  # QSerialPort::Data8
             getattr(QSerialPort, self.stop_bit.currentText()))
 
         # NoFlowControl          没有流程控制
         # HardwareControl        硬件流程控制(RTS/CTS)
         # SoftwareControl        软件流程控制(XON/XOFF)
         # UnknownFlowControl     未知控制
-        self._serial.setFlowControl(QSerialPort.NoFlowControl)
+        self.serial.setFlowControl(QSerialPort.NoFlowControl)
         # 读写方式打开串口
-        ok = self._serial.open(QIODevice.ReadWrite) 
+        ok = self.serial.open(QIODevice.ReadWrite) 
         print(ok)
         if ok:
             self.console_terminal.append('打开串口成功')
+            logger.info("打开串口成功")
             self.statusbar.showMessage("打开串口成功")
             self.open_close_buttom.setText('点击关闭串口')
             #self.labelStatus.setProperty('isOn', True)
@@ -262,6 +283,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
 
         else:
             self.console_terminal.append('打开串口失败')
+            logger.info("打开串口失败")
             self.statusbar.showMessage("打开串口失败")
             self.open_close_buttom.setText('点击打开串口')
             #self.labelStatus.setProperty('isOn', False)
@@ -284,7 +306,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
             
     def sendtoconsole(self):
         # 发送消息
-        if not self._serial.isOpen():
+        if not self.serial.isOpen():
             print('串口未连接')
             return
         text = self.plainTextEdit.toPlainText()
@@ -307,14 +329,15 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         
         if self.hex_send.isChecked():
             # 如果勾选了hex发送            
+            
             text = text.toHex()
         # 发送数据
         #print('发送数据:', text2)
         for key2 in range(len(text2)):
             #print("准备发送：",text2[key2])
-            self._serial.write(QByteArray((text2[key2].strip()+'\r').encode('gb2312')))
+            self.serial.write(QByteArray((text2[key2].strip()+'\r').encode('gb2312')))
             #print("发送：",text2[key2].encode('gb2312'))
-    
+            
         
         #显示发送与接收的字符数量
                 
@@ -334,7 +357,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
             
     def onReadyRead(self):
         # 数据接收响应
-        if self._serial.bytesAvailable():
+        if self.serial.bytesAvailable():
             
             # 当数据可读取时
             # 这里只是简单测试少量数据,如果数据量太多了此处readAll其实并没有读完
@@ -344,7 +367,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
                                             # #没有换行，没法实时显示，所以不用canreadline函数，而是实时显示
                 
             try:
-                GlobalVariable.serialreaddata = self._serial.readAll() #self._serial.readLine()会出现转码错误，不知道为啥
+                GlobalVariable.serialreaddata = self.serial.readAll() #self._serial.readLine()会出现转码错误，不知道为啥
                 GlobalVariable.receivebuffer+=GlobalVariable.serialreaddata
                 # print("buffer",id(GlobalVariable.receivebuffer))
                 # print("serialdata",id(GlobalVariable.serialreaddata))
@@ -385,12 +408,24 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
                 #gb2312b编码，正常在python中print出来出来print(b'\x32\x33\x34\x08 \x08\x35\x36'.decode('gb2312'))结果为2356，
                 #也就是\x08 \x08会执行退格空格退格操作，但是使用insertPlainText或者append进QTextEdit时，无法达到想要的效果，
                 #退格无效只保留了空格,因此此处退格删除操作用自定义指令实现。
+                #此处打印console terminal到log文件应该需要进行粘包，按照换行来，
+                # 只有有换行则打印一条log，没有换行则等待下一个字符直到有换行
+                print("调试串口接收到：",GlobalVariable.serialreaddata)
+                # self.console_terminal.insertPlainText("这是一个测试第一行")
+                # self.console_terminal.insertPlainText("这是一个测试第二行")
+                # self.console_terminal.insertPlainText("这是一个测试第三行")
+                #以上插入信息时不会换行
+                loginfo=""
                 if GlobalVariable.serialreaddata != b'\x08 \x08':
                     if GlobalVariable.serialreaddata.contains(b'\r\r\n'):
                         self.console_terminal.insertPlainText(GlobalVariable.serialreaddata.data().decode('gb2312').replace("\r\r\n", "\r\n"))
+                        loginfo=GlobalVariable.serialreaddata.data().decode('gb2312')
+                        print("处理后的log信息",loginfo)
+                        logger.info("\r\n"+GlobalVariable.serialreaddata.data().decode('gb2312').replace("\r\r\n", "\r\n"))
                     #self.console_terminal.append(b'\x31\x32\x33'.decode('gb2312'))
                     else:
                         self.console_terminal.insertPlainText(GlobalVariable.serialreaddata.data().decode('gb2312')) #.strip('\r') insertPlainText
+                        logger.info("\r\n"+GlobalVariable.serialreaddata.data().decode('gb2312'))
                     #print('无退格')
                 
             
@@ -449,8 +484,8 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
             self.com_option.addItem(info.portName())
 
     def closeEvent(self, event):
-        if self._serial.isOpen():
-            self._serial.close()
+        if self.serial.isOpen():
+            self.serial.close()
         super(MainWindow, self).closeEvent(event)
 
     @pyqtSlot()
@@ -796,7 +831,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         """
         Slot documentation goes here.
         """
-        self.registerbaselinecheck_obj=RegisterBaseLineCheck()
+        self.registerbaselinecheck_obj=RegisterBaseLineCheck(self)
         self.registerbaselinecheck_obj.setMain(self)
         self.registerbaselinecheck_obj.show()
 
@@ -808,6 +843,18 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         self.fan_temp_test_obj=FanAndTempTest()
         self.fan_temp_test_obj.setMain(self)
         self.fan_temp_test_obj.show()
+###脚本工具####
+    @pyqtSlot()
+    def on_actionPython_triggered(self):
+        """
+        Slot documentation goes here.
+        """
+        self.selectpythons=selectpythonscript(self)
+        self.selectpythons.setMain(self)
+        # self.crt=CRT()
+        # self.crt.setMain(self)
+        
+        self.selectpythons.show()
 
 ###工具栏按键###
     @pyqtSlot()
@@ -816,9 +863,9 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         按下工具栏上的+按钮，开始添加测试命令到测试序列
         """
         #print("按下添加测试")
-        sendCommand = SendCommandDialog()  #由于不需要设置任何对象的属性，所以不需要参数
-        sendCommand.setMain(self)
-        sendCommand.exec_()
+        self.sendCommand = AddSendCommandWidgetandWaitingEcho(self)  #从mainwindow继承，这样可以让窗口始终在mainwindow上方。
+        self.sendCommand.setMain(self)
+        self.sendCommand.show()
         
     @pyqtSlot()
     def on_actionSettingDelay_triggered(self):
@@ -871,76 +918,76 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         addquickcommand_obj.setMain(self)
         addquickcommand_obj.exec_()
 
-    @pyqtSlot()
-    def on_actionshow_version_triggered(self):
-        """
-        Slot documentation goes here.
-        """
-        char="show version\r\n"
-        self._serial.write(char.encode(encodingType))
+    # @pyqtSlot()
+    # def on_actionshow_version_triggered(self):
+    #     """
+    #     Slot documentation goes here.
+    #     """
+    #     char="show version\r\n"
+    #     self.serial.write(char.encode(encodingType))
 
-    @pyqtSlot()
-    def actiontoolbar_sendcommand_triggered(self,command):
-        print("command is :",command)
-        char=command+"\r\n"
-        self._serial.write(char.encode(encodingType))
+    # @pyqtSlot()
+    # def actiontoolbar_sendcommand_triggered(self,command):
+    #     print("command is :",command)
+    #     char=command+"\r\n"
+    #     self.serial.write(char.encode(encodingType))
     
-    @pyqtSlot()
-    def on_actionshow_version_detail_triggered(self):
-        """
-        Slot documentation goes here.
-        """
-        char="show version detail\r\n"
-        self._serial.write(char.encode(encodingType))
+    # @pyqtSlot()
+    # def on_actionshow_version_detail_triggered(self):
+    #     """
+    #     Slot documentation goes here.
+    #     """
+    #     char="show version detail\r\n"
+    #     self.serial.write(char.encode(encodingType))
         
     
-    @pyqtSlot()
-    def on_actionshow_manu_triggered(self):
-        """
-        Slot documentation goes here.
-        """
-        char="show manu\r\n"
-        self._serial.write(char.encode(encodingType))
+    # @pyqtSlot()
+    # def on_actionshow_manu_triggered(self):
+    #     """
+    #     Slot documentation goes here.
+    #     """
+    #     char="show manu\r\n"
+    #     self.serial.write(char.encode(encodingType))
     
-    @pyqtSlot()
-    def on_actionshow_int_sta_triggered(self):
-        """
-        Slot documentation goes here.
-        """
-        char="show int sta\r\n"
-        self._serial.write(char.encode(encodingType))
+    # @pyqtSlot()
+    # def on_actionshow_int_sta_triggered(self):
+    #     """
+    #     Slot documentation goes here.
+    #     """
+    #     char="show int sta\r\n"
+    #     self.serial.write(char.encode(encodingType))
     
-    @pyqtSlot()
-    def on_actionshow_power_triggered(self):
-        """
-        Slot documentation goes here.
-        """
-        char="show power\r\n"
-        self._serial.write(char.encode(encodingType))
+    # @pyqtSlot()
+    # def on_actionshow_power_triggered(self):
+    #     """
+    #     Slot documentation goes here.
+    #     """
+    #     char="show power\r\n"
+    #     self.serial.write(char.encode(encodingType))
     
-    @pyqtSlot()
-    def on_actionshow_fan_triggered(self):
-        """
-        Slot documentation goes here.
-        """
-        char="show fan\r\n"
-        self._serial.write(char.encode(encodingType))
+    # @pyqtSlot()
+    # def on_actionshow_fan_triggered(self):
+    #     """
+    #     Slot documentation goes here.
+    #     """
+    #     char="show fan\r\n"
+    #     self.serial.write(char.encode(encodingType))
     
-    @pyqtSlot()
-    def on_actionrun_system_shell_triggered(self):
-        """
-        Slot documentation goes here.
-        """
-        char="run-system-shell\r\n"
-        self._serial.write(char.encode(encodingType))
+    # @pyqtSlot()
+    # def on_actionrun_system_shell_triggered(self):
+    #     """
+    #     Slot documentation goes here.
+    #     """
+    #     char="run-system-shell\r\n"
+    #     self.serial.write(char.encode(encodingType))
     
-    @pyqtSlot()
-    def on_actiondebug_ssa_triggered(self):
-        """
-        Slot documentation goes here.
-        """
-        char="debug-ssa\r\n"
-        self._serial.write(char.encode(encodingType))
+    # @pyqtSlot()
+    # def on_actiondebug_ssa_triggered(self):
+    #     """
+    #     Slot documentation goes here.
+    #     """
+    #     char="debug-ssa\r\n"
+    #     self.serial.write(char.encode(encodingType))
 
     @pyqtSlot(QPoint)
     def on_toolBar_quickcommand_customContextMenuRequested(self, pos):
@@ -1056,7 +1103,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
     def eventFilter(self, obj, event):
         #处理console_terminal键盘按下事件
         if event.type() == event.KeyPress:
-            if self._serial != None:
+            if self.serial != None:
                 if event.key() == QtCore.Qt.Key_Up:
                     
                     #up 0x1b5b41 向上箭头
@@ -1068,7 +1115,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
                     #print("转换前", send_list)
                     #print("转换后", input_s)
                     #self.console_terminal.
-                    self._serial.write(input_s)
+                    self.serial.write(input_s)
                 elif event.key() == QtCore.Qt.Key_Down:
                     #down 0x1b5b42 向下箭头
                     send_list = []
@@ -1076,14 +1123,14 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
                     send_list.append(0x5b)
                     send_list.append(0x42)
                     input_s = bytes(send_list)
-                    self._serial.write(input_s)
+                    self.serial.write(input_s)
                 elif event.key() == QtCore.Qt.Key_Backspace:
                     send_list = []
                     send_list.append(0x08)
                     input_s = bytes(send_list)
                     # print("back转换前", send_list)
                     # print("back转换后", input_s)
-                    self._serial.write(input_s)
+                    self.serial.write(input_s)
                     terminal_cursor = self.console_terminal.textCursor()#注意textCursor是一个类，因此要新建一个对象
                     if terminal_cursor.hasSelection():
                         terminal_cursor.movePosition(QTextCursor.NoMove, QTextCursor.KeepAnchor, terminal_cursor.selectionStart() - terminal_cursor.selectionStart())
@@ -1114,7 +1161,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
                     #获取按键对应的字符
                     char = event.text()
                     #print('获取的按键值：', char)
-                    self._serial.write(char.encode(encodingType))
+                    self.serial.write(char.encode(encodingType))
 
 #                self.send_num = self.send_num + num
 #                dis = '发送：'+ '{:d}'.format(self.send_num) + '  接收:' + '{:d}'.format(self.receive_num)
@@ -1128,13 +1175,10 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         
 
 
-  
 
 if __name__ == '__main__':
     
-    
     app = QtWidgets.QApplication(sys.argv)
-    
     testCenter = MainWindow()
     testCenter.show()
     sys.exit(app.exec_())

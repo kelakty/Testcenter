@@ -1,22 +1,24 @@
 # -*- coding: utf-8 -*-
 
 """
-Module implementing SendCommandDialog.
+Module implementing SendCommandWidget.
 """
 
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QDialog
+from PyQt5.QtWidgets import QDialog,QWidget
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 
-from subdialog.Ui_addsendcommand import Ui_Dialog
+
+from subdialog.Ui_addsendcommand import Ui_addsendcommandandwaitingtecho
+
 from globalvariable import GlobalVariable
 
 # from testcommandsessions import testcommandlist  #可以通过这种方法传递列表型全局变量
 # from testcommandsessions import TestCommandSession
 
 
-class SendCommandDialog(QDialog, Ui_Dialog):
+class AddSendCommandWidgetandWaitingEcho(QWidget, Ui_addsendcommandandwaitingtecho):
     """
     Class documentation goes here.
     """
@@ -27,19 +29,26 @@ class SendCommandDialog(QDialog, Ui_Dialog):
         @param parent reference to the parent widget
         @type QWidget
         """
-        super(SendCommandDialog, self).__init__(parent)
+        super(AddSendCommandWidgetandWaitingEcho, self).__init__(parent)
+        self.setWindowFlags(self.windowFlags() | QtCore.Qt.Dialog)
         self.setupUi(self)
 
     def setMain(self, main_window):
         self.mainwindow=main_window
-           
-    
+
+    @pyqtSlot()
+    def on_checkBox_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        pass
+
+
     @pyqtSlot()
     def on_pushButton_addTestCommand_clicked(self):
         """
-        点击添加测试命令到序列
+        Slot documentation goes here.
         """
-        
         case_numname="Item_"+str(GlobalVariable.case_num)
         column_num=0
         GlobalVariable.testcommandlist.append("@"+str(GlobalVariable.case_num)+
@@ -71,11 +80,4 @@ class SendCommandDialog(QDialog, Ui_Dialog):
         print(GlobalVariable.testcommandlist)
         GlobalVariable.case_num+=1
         GlobalVariable.commandlist_num+=1
-        self.close()
-    
-    @pyqtSlot()
-    def on_pushButton_editSendCommand_cancel_clicked(self):
-        """
-        Slot documentation goes here.
-        """
         self.close()
