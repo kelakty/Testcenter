@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>寄存器基线测试</string>
   </property>
   <widget class="QPushButton" name="pushButton_browse_RBL_dir">
    <property name="geometry">

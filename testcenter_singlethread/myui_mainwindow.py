@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtWidgets import QMainWindow,QAction
 from PyQt5.QtGui import QIcon
 from ui_mainwindow import Ui_MainWindow
-#import qdarkstyle
+import qdarkstyle
 
 class MyUi_MainWindow(object):
     def setupUi2(self, MainWindow):
