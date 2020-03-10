@@ -462,6 +462,17 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
             # cursor.(vt102.screen.cursor)
             # self.console_terminal.setTextCursor(cursor)
 
+            #以下代码 引入VT102后 不再使用        
+            #cursor = QWidget.QTextEdit.textCursor() #保留错误写法，注意要使用对象名，而不是类名
+            cursor = self.console_terminal.textCursor()
+            #print('接收数据后光标', cursor)
+            if(cursor != cursor.End):
+                cursor.movePosition(cursor.End)
+                self.console_terminal.setTextCursor(cursor)
+            #print('接收数据移动后光标', cursor)
+
+
+                #print('光标已移动到最后')    
     #            print(data2)
     #            self.console_terminal.append(data2.data().decode('gb2312').strip('\r\n')) #使用append方法插入会导致排版显示出现问题
     #            '''data = self._serial.readAll()

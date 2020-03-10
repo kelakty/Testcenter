@@ -145,7 +145,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         #对console_terminal进行事件过滤
         self.console_terminal.installEventFilter(self)
 
-        self.console_terminal.selectionChanged.connect(self.textCopy)  #选择文本自动复制
+        self.console_terminal.selectionChanged.connect(self.textCopy) 
         # self.console_terminal.copyAvailable.connect(self.textCopy) #双击文本自动复制
 #
 #        self.timer_send= QTimer(self)
@@ -170,7 +170,8 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         #        u"ck a character's race, role, gender and alignment f" +
         #        u"or you? [ynq] ")
         # self.console_terminal.insertPlainText(str(self.screen))
-    def textCopy(self):  #选择文本自动复制
+    def textCopy(self):  #文本自动复制
+        
         self.console_terminal.copy()
         # command = QApplication.clipboard().text().upper()
         # print(command)
@@ -429,14 +430,6 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
                 # self.console_terminal.insertPlainText("这是一个测试第二行")
                 # self.console_terminal.insertPlainText("这是一个测试第三行")
                 #以上插入信息时不会换行
-                #将console_terminal光标移动到末尾
-                # if(self.console_terminal.textCursor() != self.console_terminal.textCursor().End):
-                #     self.console_terminal.textCursor().movePosition(self.console_terminal.textCursor().End)
-                #     self.console_terminal.setTextCursor(self.console_terminal.textCursor())
-                cursor = self.console_terminal.textCursor()
-                if(cursor != cursor.End):
-                    cursor.movePosition(cursor.End)
-                    self.console_terminal.setTextCursor(cursor)
                 loginfo=""
                 if GlobalVariable.serialreaddata != b'\x08 \x08':
                     if GlobalVariable.serialreaddata.contains(b'\r\r\n'):
@@ -452,8 +445,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
                 
             
             except  Exception:
-                pass
-                # QMessageBox.critical(self, '','转码出错!')
+                QMessageBox.critical(self, '','转码出错!')
                 return 
 
             # #移动光标到VT102末尾(未成功待开发)
@@ -462,6 +454,17 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
             # cursor.(vt102.screen.cursor)
             # self.console_terminal.setTextCursor(cursor)
 
+            #以下代码 引入VT102后 不再使用        
+            #cursor = QWidget.QTextEdit.textCursor() #保留错误写法，注意要使用对象名，而不是类名
+            cursor = self.console_terminal.textCursor()
+            #print('接收数据后光标', cursor)
+            if(cursor != cursor.End):
+                cursor.movePosition(cursor.End)
+                self.console_terminal.setTextCursor(cursor)
+            #print('接收数据移动后光标', cursor)
+
+
+                #print('光标已移动到最后')    
     #            print(data2)
     #            self.console_terminal.append(data2.data().decode('gb2312').strip('\r\n')) #使用append方法插入会导致排版显示出现问题
     #            '''data = self._serial.readAll()
@@ -1184,7 +1187,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
                 pass
             return True
         else:
-            return False  #event过滤必须返回bool类型，不能无返回，所以该句不能省
+            return False
 
         
 
