@@ -257,7 +257,7 @@
       <string notr="true"/>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="protocalSettingPage1">
       <attribute name="title">
@@ -571,7 +571,7 @@ selection-color: qconicalgradient(cx:0, cy:0, angle:135, stop:0 rgba(255, 255, 0
       <attribute name="title">
        <string>Telnet</string>
       </attribute>
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="newTelnet">
        <property name="geometry">
         <rect>
          <x>0</x>
@@ -584,7 +584,7 @@ selection-color: qconicalgradient(cx:0, cy:0, angle:135, stop:0 rgba(255, 255, 0
         <string>新建连接</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="pushButton_2">
+      <widget class="QPushButton" name="closeCurrentTelnet">
        <property name="geometry">
         <rect>
          <x>80</x>

@@ -4,18 +4,14 @@ from globalvariable import GlobalVariable
 from PyQt5.QtCore import QThread
 import threading
 CRT=CRT()
-print("开始运行testautoscript脚本")
-a=1
-b=2
-CRT.MessageBox("warning","警告","这是一个警告")
-if a<b: CRT.Send("aBc\r\n");CRT.Send("def\r\n")
+print("开始运行脚本")
 
-# elif a==b:
-print('%-25s: %s, %s,' % ("selectscipt_win_slot", QThread.currentThread(), int(QThread.currentThreadId())))
-print('%-25s: %s, %s,' % ("selectscipt_win_slot", threading.current_thread().name, threading.current_thread().ident))
+CRT.MessageBox("information","提示","是否现在开始测试")
+CRT.Send("aBc\r\n")
+
 results=CRT.SendAndWaitString("sh ver\r\n",1,"aBc",CompileFlag="IGNORECASE",EmptyBuffer=1)
 print("运行结果为：",results)
-results=CRT.SendAndWaitString("sh ver detail\r\n",1,"description",CompileFlag="IGNORECASE",EmptyBuffer=1)  #EmptyBufferBeforeTest  EmptyBufferAfterTest
+results=CRT.SendAndWaitString("sh ver detail\r\n",1,"description",CompileFlag="IGNORECASE",EmptyBuffer=1)
 print("运行结果为：",results)
 results=CRT.SendAndWaitString("sh in st\r\n",1,"duplex",CompileFlag="IGNORECASE",EmptyBuffer=1)
 print("运行结果为：",results)
@@ -23,10 +19,8 @@ results=CRT.SendAndWaitString("sh pow\r\n",1,"Invalid",CompileFlag="IGNORECASE",
 print("运行结果为：",results)
 results=CRT.SendAndWaitString("sh manu\r\n",1,"Location",CompileFlag="IGNORECASE",EmptyBuffer=1)
 print("运行结果为：",results)
-# else :
-#     # CRT.MessageBox("critical","警告","这是一个警告")
-#     pass
+
 CRT.InputCheckDialog()
 # print(CRT.WaitForString("ABC",CompileFlag="IGNORECASE"))
 
-print("结束运行testautoscript脚本")
+print("结束运行脚本")

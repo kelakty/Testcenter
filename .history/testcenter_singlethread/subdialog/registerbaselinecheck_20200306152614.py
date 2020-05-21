@@ -428,5 +428,5 @@ class RegisterBaseLineCheck(QWidget, Ui_RegisterBaseLineCheck):
             self.generate_baselinereport()
         except Exception as result:
             print("未知错误%s" % result)
-            QMessageBox.critical(self, '警告','表格异常，请检查寄存器位组成（位组成没有出现异常字符，没有出现14~128等异常位组成）、寄存器值、实际读出值是否有空单元格(有空单元格需要补充或者删除整列)，检查是否有隐藏的行列，修改后重试',QMessageBox.Yes)
+            QMessageBox.critical(self, '警告','表格异常，请检查寄存器位组成、寄存器值、实际读出值是否有空单元格，检查是否有隐藏的行列，修改后重试',QMessageBox.Yes)
 

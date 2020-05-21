@@ -31,7 +31,6 @@ import threading
 
 from ui_mainwindow import Ui_MainWindow
 from myui_mainwindow import MyUi_MainWindow
-from subdialog.newtelnet import NewTelnet
 from subdialog.vlanconfig import VlanConfig
 from subdialog.addsendcommand import AddSendCommandWidgetandWaitingEcho
 from subdialog.adddelaydialog import AddDelayDialog
@@ -260,7 +259,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         try:
             self.config_init()
         except Exception :
-            QMessageBox.critical(self,'critical','初始化配置文件出错，请删除程序目录下的config.ini初始化配置文件后重试')
+            QMessageBox.critical(self,'critical','初始化配置文件出错，请删除初始化配置文件后重试')
 
         #控制台接收数据Queue
         
@@ -438,7 +437,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
 
             if self.console_terminal_threadpool[GlobalVariable.comThreadCounter] == None:
                 print("开始创建com线程")
-                ok=self.newCom_MdiThread(GlobalVariable.comThreadCounter) 
+                ok=self.newCom_MdiTread(GlobalVariable.comThreadCounter) 
                 if ok == True:
                     GlobalVariable.comThreadCounter+=1
                 else:
@@ -446,14 +445,14 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
             else:
                 print("当前线程池不为空")
                 self.console_terminal_threadpool.append(None)
-                ok=self.newCom_MdiThread(GlobalVariable.comThreadCounter+1) 
+                ok=self.newCom_MdiTread(GlobalVariable.comThreadCounter+1) 
                 if ok == True:
                     GlobalVariable.comThreadCounter+=1
                 else:
                     pass  #创建串口线程不成功，需要另外处理
                 
     
-    def newCom_MdiThread(self,comThreadCounter):  #新建Mdi页串口和新线程
+    def newCom_MdiTread(self,comThreadCounter):  #新建Mdi页串口和新线程
         #创建一个MDIarea的sub窗口
         try:
             self.subwindow[comThreadCounter] = NewMdiSubWindow()
@@ -818,9 +817,8 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         """
         点击新建Telnet连接
         """
-        newTelnet = NewTelnet()
-        newTelnet.setMain(self)
-        newTelnet.exec_()
+        # TODO: not implemented yet
+        raise NotImplementedError
  
     @pyqtSlot()
     def on_btnSaveLog_clicked(self):

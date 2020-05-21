@@ -31,5 +31,3 @@ logger.error("this is a error log")
 logger.critical("this is a critical log")
 logger.info("this is a info log")
 
-
-

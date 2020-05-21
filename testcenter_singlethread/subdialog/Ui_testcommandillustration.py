@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'd:\testcenter20190116备份（增加qtextedit中进行发送命令）\testcenter20190102备份\testcenter\testcenter_pyqt5\subdialog\testcommandillustration.ui'
+# Form implementation generated from reading ui file 'd:\testcenter20190116备份（增加qtextedit中进行发送命令）\testcenter20190102备份\testcenter\Testcenter\testcenter_singlethread\subdialog\testcommandillustration.ui'
 #
 # Created by: PyQt5 UI code generator 5.11.3
 #
@@ -43,7 +43,7 @@ class Ui_TestCommandIllustration(object):
 
     def retranslateUi(self, TestCommandIllustration):
         _translate = QtCore.QCoreApplication.translate
-        TestCommandIllustration.setWindowTitle(_translate("TestCommandIllustration", "Form"))
+        TestCommandIllustration.setWindowTitle(_translate("TestCommandIllustration", "常用测试命令"))
         self.textBrowser_testcommand.setHtml(_translate("TestCommandIllustration", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"

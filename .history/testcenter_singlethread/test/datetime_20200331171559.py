@@ -31,5 +31,15 @@ logger.error("this is a error log")
 logger.critical("this is a critical log")
 logger.info("this is a info log")
 
+def create_num(all_num):
+    a, b=0, 1
+    current_num =0
+    while current_num < all_num:
+        yield a
+        a, b  = b, a+b
+        current_num +=1
+obj =create_num(10)
+for num in obj:
+    print(num)
 
-
+    
