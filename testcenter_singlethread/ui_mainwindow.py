@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'd:\testcenter20190116备份（增加qtextedit中进行发送命令）\testcenter20190102备份\testcenter\Testcenter\testcenter_singlethread\mainwindow.ui'
+# Form implementation generated from reading ui file 'D:\testcenter20190116备份（增加qtextedit中进行发送命令）\testcenter20190102备份\testcenter\Testcenter\testcenter_singlethread\mainwindow.ui'
 #
 # Created by: PyQt5 UI code generator 5.11.3
 #
@@ -583,6 +583,8 @@ class Ui_MainWindow(object):
         self.actionrun_system_shell.setObjectName("actionrun_system_shell")
         self.actiondebug_ssa = QtWidgets.QAction(MainWindow)
         self.actiondebug_ssa.setObjectName("actiondebug_ssa")
+        self.actionloganalyzer = QtWidgets.QAction(MainWindow)
+        self.actionloganalyzer.setObjectName("actionloganalyzer")
         self.Sequencer.raise_()
         self.sendbuffer_dockwidget.raise_()
         self.message_dockwidget.raise_()
@@ -600,6 +602,7 @@ class Ui_MainWindow(object):
         self.menu_4.addAction(self.menuComSearch)
         self.menu_5.addAction(self.actionvlan_config)
         self.menu_5.addAction(self.actionvlan_auto_config)
+        self.menu_5.addAction(self.actionloganalyzer)
         self.menuCommonTestCommand.addAction(self.actionshow_command)
         self.menuCommonTestCommand.addAction(self.actionTestCommandUpdate)
         self.menu_6.addAction(self.menuCommonTestCommand.menuAction())
@@ -651,14 +654,6 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionDeleteTest)
         self.toolBar.addSeparator()
         self.toolBar_quickcommand.addAction(self.actionAddQuickCommand)
-        self.toolBar_quickcommand.addAction(self.actionshow_version)
-        self.toolBar_quickcommand.addAction(self.actionshow_version_detail)
-        self.toolBar_quickcommand.addAction(self.actionshow_manu)
-        self.toolBar_quickcommand.addAction(self.actionshow_int_sta)
-        self.toolBar_quickcommand.addAction(self.actionshow_power)
-        self.toolBar_quickcommand.addAction(self.actionshow_fan)
-        self.toolBar_quickcommand.addAction(self.actionrun_system_shell)
-        self.toolBar_quickcommand.addAction(self.actiondebug_ssa)
 
         self.retranslateUi(MainWindow)
         self.protocolSetting.setCurrentIndex(1)
@@ -850,5 +845,16 @@ class Ui_MainWindow(object):
         self.actionshow_fan.setText(_translate("MainWindow", "show fan"))
         self.actionrun_system_shell.setText(_translate("MainWindow", "run-system-shell"))
         self.actiondebug_ssa.setText(_translate("MainWindow", "debug-ssa"))
+        self.actionloganalyzer.setText(_translate("MainWindow", "log分析"))
 
 import iconresource_rc
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    MainWindow = QtWidgets.QMainWindow()
+    ui = Ui_MainWindow()
+    ui.setupUi(MainWindow)
+    MainWindow.show()
+    sys.exit(app.exec_())
+

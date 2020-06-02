@@ -110,6 +110,7 @@
     </property>
     <addaction name="actionvlan_config"/>
     <addaction name="actionvlan_auto_config"/>
+    <addaction name="actionloganalyzer"/>
    </widget>
    <widget class="QMenu" name="menu_6">
     <property name="title">
@@ -1051,14 +1052,6 @@ background-color: rgb(174, 255, 188);</string>
     <bool>false</bool>
    </attribute>
    <addaction name="actionAddQuickCommand"/>
-   <addaction name="actionshow_version"/>
-   <addaction name="actionshow_version_detail"/>
-   <addaction name="actionshow_manu"/>
-   <addaction name="actionshow_int_sta"/>
-   <addaction name="actionshow_power"/>
-   <addaction name="actionshow_fan"/>
-   <addaction name="actionrun_system_shell"/>
-   <addaction name="actiondebug_ssa"/>
   </widget>
   <widget class="QDockWidget" name="sendbuffer_dockwidget">
    <property name="sizeIncrement">
@@ -1626,6 +1619,11 @@ background-color: rgb(174, 255, 188);</string>
   <action name="actiondebug_ssa">
    <property name="text">
     <string>debug-ssa</string>
+   </property>
+  </action>
+  <action name="actionloganalyzer">
+   <property name="text">
+    <string>log分析</string>
    </property>
   </action>
   <zorder>Sequencer</zorder>
