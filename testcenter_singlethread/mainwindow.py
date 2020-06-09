@@ -24,7 +24,7 @@ import os
 from functools import partial
 from PyQt5.QtWidgets import QMessageBox,QAction
 from PyQt5.QtWidgets import QTreeWidgetItem
-from PyQt5.QtCore import QTimer,pyqtSignal,QEvent
+from PyQt5.QtCore import pyqtSignal,QEvent
 import pandas as pd
 import re
 import threading
@@ -33,6 +33,7 @@ from ui_mainwindow import Ui_MainWindow
 from myui_mainwindow import MyUi_MainWindow
 from subdialog.newtelnet import NewTelnet
 from subdialog.vlanconfig import VlanConfig
+from subdialog.keycombination import KeyCombination
 from subdialog.addsendcommand import AddSendCommandWidgetandWaitingEcho
 from subdialog.adddelaydialog import AddDelayDialog
 from subdialog.characterrecognition import DialogCharacterRecognition
@@ -42,11 +43,12 @@ from subdialog.fanandtemptest import FanAndTempTest
 from subdialog.addquickcommand import AddQuickCommand
 from subdialog.selectpythonscript import selectpythonscript
 from AutomationScript import CRT
-from serial_thread import SerialThread,AnalyzObject
+from serial_thread import SerialThread,SerialConsoleThread
 from console_init import ConsoleInit
 from subdialog.loganalyzer import LogAnalyzer
 
 from init import Init
+import time
 from globalvariable import GlobalVariable
 from testcommandsessions import TestCommandSession
 # from testcommandsessions import testcommandlist
@@ -55,91 +57,44 @@ from testcommandsessions import TestCommandSession
 
 import logging
 from logging import handlers
+# import logger
 from datetime import datetime
+from loggerbythread import GeneralLogger
 
-logger= logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-handler= logging.handlers.TimedRotatingFileHandler('Testcenter.log',when='midnight',interval=1,backupCount=30)
-handler.setLevel(logging.INFO)
-handler.setFormatter(logging.Formatter('%(asctime)s-%(levelname)s ： %(message)s'))
-logger.addHandler(handler)
-
-
-encodingType=GlobalVariable.defaultEncodingType
 
 class NewMdiSubWindow(QtWidgets.QMdiSubWindow):
     """对QMdiSubWindow类重写，实现关闭窗口时执行其他功能"""
     # def __init__(self):
     #     super(NewMdiSubWindow,self).__init__() #parent
         
-
     def setMain(self, main_window):
         self.mainwindow=main_window
-    def sendanalyze_arg(self,analyzeobj,comThreadCounter):
-        self.analyzeobj=analyzeobj
-        self.com_threadCounter=comThreadCounter
 
     def closeEvent(self, event):
         print("准备关闭tab窗口...")
+        # if GlobalVariable.Console == []:
         result = QtWidgets.QMessageBox.question(self, "Robot", "Do you want to close?", QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
         if(result == QtWidgets.QMessageBox.Yes):
             event.accept()
             #需要对打开的串口进行关闭等操作，删除全局变量中的串口信息
-            # 
-            obj_index=GlobalVariable.mdisubwindow_objlist.index(self)
-            print("当前对象地址：",self)
-            print('关闭前总共有哪些线程：',threading.enumerate())    #查看有哪些线程
-            #此处需要关闭线程，删除线程、Mdi窗体、等相关对象的变量值
-            print("当前线程的comThreadCounter是：",self.com_threadCounter)
-            self.analyzeobj.rec_trigger.disconnect(self.mainwindow.rec_comdata_slot)  #
-            self.analyzeobj.send_trigger.disconnect(self.analyzeobj.sendto_comdata_slot)
+            index = GlobalVariable.mainwindow.find_dictionarylist_keyvalue_index(GlobalVariable.Console,"subwindowobj",self)
+            if index >= 0:
+                #此处需要关闭线程，删除线程、Mdi窗体、等相关对象的变量值
+                GlobalVariable.Console[index]["consolethread"].rec_trigger.disconnect(self.mainwindow.rec_comdata_slot) 
+                GlobalVariable.Console[index]["consolethread"].send_trigger.disconnect(GlobalVariable.Console[index]["consolethread"].sendto_comdata_slot)
+                GlobalVariable.Console[index]["serialobj"].close() #关闭串口
+                GlobalVariable.Console[index]["threadpool"].quit()
+                GlobalVariable.Console[index]["threadpool"].wait()
+                print("线程是否finish",GlobalVariable.Console[index]["threadpool"].isFinished()) #查看线程是否已经finished
+                GlobalVariable.Console[index]["threadpool"].deleteLater()
 
-            print("销毁前线程池：",self.mainwindow.console_terminal_threadpool)
-            print("销毁前线程对象:",self.mainwindow.analyze)
-            print("销毁前子窗口：",self.mainwindow.subwindow)
-            print("销毁前计数：",GlobalVariable.comThreadCounter)
-
-            print("待销毁的线程是：", QThread.currentThread(),self.mainwindow.console_terminal_threadpool[obj_index])
-
-            self.mainwindow.console_terminal_threadpool[obj_index].quit()
-            self.mainwindow.console_terminal_threadpool[obj_index].wait()
-            print("线程是否finish",self.mainwindow.console_terminal_threadpool[obj_index].isFinished()) #查看线程是否已经finished
-            self.mainwindow.console_terminal_threadpool[obj_index].deleteLater()
-            
-            print("销毁后线程池：",self.mainwindow.console_terminal_threadpool)
-            print("销毁后线程对象:",self.mainwindow.analyze)
-            print("销毁后子窗口：",self.mainwindow.subwindow)
-            print("销毁后计数：",GlobalVariable.comThreadCounter)
-            print("MDIsubwin_objlist:",GlobalVariable.mdisubwindow_objlist)
-            print("opencom_objlist:",GlobalVariable.opencom_objlist)
-            print("opencom_list:",GlobalVariable.opencomlist)
-            print("subwin对象的索引：",GlobalVariable.mdisubwindow_objlist.index(self))
-            
-            print("对象列表索引是：",obj_index)
-            print("待关闭串口是：",GlobalVariable.opencom_objlist[obj_index],GlobalVariable.opencom_objlist)
-            GlobalVariable.serial[obj_index].close() #关闭串口
-            GlobalVariable.opencom_objlist.remove(GlobalVariable.opencom_objlist[obj_index])
-            GlobalVariable.opencomlist.remove(GlobalVariable.opencomlist[obj_index])
-            GlobalVariable.mdisubwindow_objlist.remove(self)
-            print("待关闭串口是：",GlobalVariable.opencom_objlist)
-
-            
-            
-
-            print("MDIsubwin_objlist:",GlobalVariable.mdisubwindow_objlist)
-            print("opencom_objlist:",GlobalVariable.opencom_objlist)
-            print("opencom_list:",GlobalVariable.opencomlist)
-            
-            self.mainwindow.analyze.remove(self.mainwindow.analyze[obj_index])
-            self.mainwindow.console_terminal_threadpool.remove(self.mainwindow.console_terminal_threadpool[obj_index])
-            self.mainwindow.subwindow.remove(self.mainwindow.subwindow[obj_index])
-            GlobalVariable.comThreadCounter-=1
-
-            print('关闭后总共有哪些线程：',threading.enumerate())    #查看有哪些线程
-            print("串口线程已关闭")
+                # self.mainwindow.console_terminal_threadpool.remove(GlobalVariable.Console[index]["threadpool"])
+                GlobalVariable.Console.remove(GlobalVariable.Console[index])
+                print('关闭后总共有哪些线程：',threading.enumerate())    #查看有哪些线程
+                print("串口线程已关闭")
         else:
             event.ignore()
-        
+
     def eventFilter(self, obj, event):
         
         # if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Escape:
@@ -152,20 +107,17 @@ class NewMdiSubWindow(QtWidgets.QMdiSubWindow):
         #判断该窗口的串口对象是否在已打开串口列表
         if event.type() == event.KeyPress:
             #判断哪个窗口按下的事件
-            # print("当前窗口对象是：",obj)
-            if obj in GlobalVariable.opencom_objlist:
-            #if self.serial != None:
+            print("当前窗口对象是：",obj)
+            index = GlobalVariable.mainwindow.find_dictionarylist_keyvalue_index(GlobalVariable.Console, "consoleobj", obj)
+            if  index >= 0:
+                consolethread = GlobalVariable.Console[index]["consolethread"]
                 if event.key() == QtCore.Qt.Key_Up:
                     send_list = []
                     send_list.append(0x1b)
                     send_list.append(0x5b)
                     send_list.append(0x41)
                     input_s = bytes(send_list)
-                    #print("转换前", send_list)
-                    #print("转换后", input_s)
-                    #self.console_terminal.
-                    #self.serial.write(input_s)
-                    self.analyzeobj.send_trigger.emit(input_s)
+                    consolethread.send_trigger.emit(input_s)
                 elif event.key() == QtCore.Qt.Key_Down:
                     #down 0x1b5b42 向下箭头
                     send_list = []
@@ -173,28 +125,25 @@ class NewMdiSubWindow(QtWidgets.QMdiSubWindow):
                     send_list.append(0x5b)
                     send_list.append(0x42)
                     input_s = bytes(send_list)
-                    #self.serial.write(input_s)
-                    self.analyzeobj.send_trigger.emit(input_s)
-                elif event.key() == QtCore.Qt.Key_Backspace:
+                    consolethread.send_trigger.emit(input_s)
+                elif event.key() == QtCore.Qt.Key_Backspace:   #删除键处理
                     send_list = []
                     send_list.append(0x08)
                     input_s = bytes(send_list)
-                    # print("back转换前", send_list)
-                    # print("back转换后", input_s)
-                    #self.serial.write(input_s)
-                    self.analyzeobj.send_trigger.emit(input_s)
-
-                    terminal_cursor = self.console_terminal[self.com_threadCounter].textCursor()#注意textCursor是一个类，因此要新建一个对象
+                    consolethread.send_trigger.emit(input_s)
+                    terminal_cursor = GlobalVariable.Console[index]["consoleobj"].textCursor()
                     if terminal_cursor.hasSelection():
-                        terminal_cursor.movePosition(QTextCursor.NoMove, QTextCursor.KeepAnchor, terminal_cursor.selectionStart() - terminal_cursor.selectionStart())
+                        terminal_cursor.movePosition(QTextCursor.NoMove, QTextCursor.KeepAnchor, 
+                            terminal_cursor.selectionStart() - terminal_cursor.selectionStart())
                     else:
                         terminal_cursor.movePosition(QTextCursor.PreviousCharacter, QTextCursor.KeepAnchor, 1)
-                    self.console_terminal[self.com_threadCounter].setTextCursor(terminal_cursor)
-                    self.console_terminal[self.com_threadCounter].cut()
-#                    
-#                    
-#                    #self.console_terminal.cut()
-#                    cursor = self.console_terminal.textCursor()#注意textCursor是一个类，因此要新建一个对象
+                    GlobalVariable.Console[index]["consoleobj"].setTextCursor(terminal_cursor)
+                    GlobalVariable.Console[index]["consoleobj"].cut()
+                    # GlobalVariable.Console[index]["consoleobj"].copy()
+                    
+
+                    #clipboard = QtGui.QApplication.clipboard()  #剪贴板
+
 #                    self.console_terminal.moveCursor(QTextCursor.Left, QTextCursor.KeepAnchor)
 #                    cursor.removeSelectedText()
 #                    print('删除一个字符', cursor)
@@ -211,22 +160,17 @@ class NewMdiSubWindow(QtWidgets.QMdiSubWindow):
 #                        self.console_terminal.setTextCursor(cursor)
                    
                 else:    
-                    #获取按键对应的字符
+                    #获取按键对应的字符进行发送
                     char = event.text()
-                    #print('获取的按键值：', char)
-                    #self.serial.write(char.encode(encodingType))
                     try:
-                        self.analyzeobj.send_trigger.emit(char.encode(encodingType))
+                        consolethread.send_trigger.emit(char.encode(GlobalVariable.Console[index]["encodingtype"]))
                     except Exception :
-                        print("发送字符信号发射出错")
-                    print('%-25s: %s, %s,' % ("mainwin_event", QThread.currentThread(), int(QThread.currentThreadId())))
-                    print('%-25s: %s, %s,' % ("mainwin_event", threading.current_thread().name, threading.current_thread().ident))
+                        # print("发送字符信号发射出错")
+                        
+                        self.textEdit_message.insertPlainText("%s发送字符出错\r\n" % GlobalVariable.Console[index]["name"])
+                    # print('%-25s: %s, %s,' % ("mainwin_event", QThread.currentThread(), int(QThread.currentThreadId())))
+                    # print('%-25s: %s, %s,' % ("mainwin_event", threading.current_thread().name, threading.current_thread().ident))
                     
-
-
-#                self.send_num = self.send_num + num
-#                dis = '发送：'+ '{:d}'.format(self.send_num) + '  接收:' + '{:d}'.format(self.receive_num)
-#                self.statusBar.showMessage(dis)
             else:
                 pass
             return True
@@ -250,21 +194,28 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         #QtWidgets.QMainWindow.__init__(self, None, QtCore.Qt.WindowStaysOnTopHint)#加上该句后窗口始终在其他所有窗口上层显示
         self.setupUi(self)
         self.setupUi2(self)
-        # self.serialreaddata=""
         GlobalVariable.mainwindow=self
+
+        currentdatetime = "TestCenter_%d%02d%02d" % (datetime.now().year,
+                            datetime.now().month, datetime.now().day)
+        GeneralLogger().set_log_path(currentdatetime + '.log') 
+        GeneralLogger().set_log_by_thread_log(True)
+        GeneralLogger().set_log_level(logging.DEBUG)
+        self.main_logger = GeneralLogger().get_logger()
+        self.main_logger.info('开始记录主线程log...')
         # self.crt=CRT()
         # self.crt.setMain(self)
         self.console_terminal_threadpool=[] #创建一个空线程池管理线程
-        self.subwindow=[]
-        self.console_terminal=[]
+        # self.subwindow=[]
+        # self.console_terminal=[]
         self.analyze=[]
         self.toolBar_quickcommand.setContextMenuPolicy(Qt.CustomContextMenu)
         #加载初始化配置文件,初始化窗体等
-        try:
-            self.init=Init()
-            self.init.config_init()
-        except Exception :
-            QMessageBox.critical(self,'critical','初始化配置文件出错，请删除程序目录下的config.ini初始化配置文件后重试')
+        # try:
+        #     self.init=Init()
+        #     self.init.config_init()
+        # except Exception :
+        #     QMessageBox.critical(self,'critical','初始化配置文件出错，请删除程序目录下的config.ini初始化配置文件后重试')
 
         #控制台接收数据Queue
         
@@ -273,6 +224,16 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
 "font: 9pt \"黑体\";\n"
 "selection-color: qconicalgradient(cx:0, cy:0, angle:135, stop:0 rgba(255, 255, 0, 69), stop:0.375 rgba(255, 255, 0, 69), stop:0.423533 rgba(251, 255, 0, 145), stop:0.45 rgba(247, 255, 0, 208), stop:0.477581 rgba(255, 244, 71, 130), stop:0.518717 rgba(255, 218, 71, 130), stop:0.55 rgba(255, 255, 0, 255), stop:0.57754 rgba(255, 203, 0, 130), stop:0.625 rgba(255, 255, 0, 69), stop:1 rgba(255, 255, 0, 69));")
         
+        #实例化一个定时发送的定时器
+        self.timer_send = QTimer(self)
+        #定时发送
+        self.timer_send.timeout.connect(self.on_send_button_clicked)
+        #实例化一个LCD时钟显示的定时器
+        self.lcdtimer = QTimer(self)
+        self.lcdtimer.timeout.connect(self.clock)
+        self.lcdtimer.start()
+
+
 
         # #VT102终端初始化
         # self.stream = vt102.stream()
@@ -357,21 +318,45 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         #        u"ck a character's race, role, gender and alignment f" +
         #        u"or you? [ynq] ")
         # self.console_terminal.insertPlainText(str(self.screen))
-    # def textCopy(self):  #选择文本自动复制
-    #     self.console_terminal.copy()
+    def textCopy(self,consoleobj):  #选择文本自动复制
+        consoleobj.copy()
         # command = QApplication.clipboard().text().upper()
         # print(command)
 
-    # def textCopy(self,status):  #双击文本自动复制
-    #     if status == True:
-    #         self.console_terminal.copy()
-    #         command = QApplication.clipboard().text().upper()
-    #         print(command)
+    def clock(self):
+        t = time.strftime("%m%d %H:%M:%S")
+        self.lcd.display(t)
 
 
     def action_hoverd(self,actionis):
         print("hoverd action is: " , actionis)
         GlobalVariable.hoverd_action=actionis
+
+    def find_dictionarylist_keyvalue_index(self,dictionarylist, keyname, keyvalue):
+        """
+        从字典列表中查找 是否存在 某一个key 且对应的值正确 则返回字典所在列表的索引，否则返回-1，由于0 == False，所以不能返回False
+        如果字典列表为空也返回-1
+        找到匹配的键值对 立马返回不再向下查找
+        Args：
+            dictionarylist: 一个字典列表
+            keyname: 字典中的key名字
+            keyvalue:字典中key名字对应的value值
+        Return：
+            index: 找到的键值对字典 所在列表的索引值
+            False ： 没找到
+            
+        """
+        if dictionarylist == []:
+            return -1
+
+        for index in range(len(dictionarylist)):
+            for key in dictionarylist[index]:
+                print("%s--%s" % (key,dictionarylist[index][key]))
+                if key == keyname:
+                    if dictionarylist[index][key] == keyvalue:
+                        return index
+        return -1
+
 
     @pyqtSlot()
     def on_open_close_buttom_clicked(self):
@@ -379,187 +364,84 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         #判断串口是否已经是打开的,如果不是已打开的则创建一个线程打开串口初始化，否则打印提示到底部状态栏
         #consoleinit=ConsoleInit():
 
+        #判断GlobalVariable.Console是否为空，为空表示没有创建任何console
+        #如果self.com_option.currentText()不在Console字典列表中，则开始新建串口
+        # print("打开串口前是否在字典列表里找到：",self.find_dictionarylist_keyvalue_index(GlobalVariable.Console,"name",self.com_option.currentText()))
+        if self.find_dictionarylist_keyvalue_index(GlobalVariable.Console, "name", self.com_option.currentText()) < 0:
+            if self.tryopencom() == True: #尝试打开串口，串口没打开则新建串口线程
+                #创建一个MDIarea的sub窗口
+                subwindow = NewMdiSubWindow()   #subwindow对象
+                subwindow.setMain(self)
 
+                # 向sub内部添加QTextEdit控件
+                subwindow.setWidget(QtWidgets.QTextEdit())
+                
+                #QTextEdit控件 对象
+                console_terminal=subwindow.widget()
+                # console_terminal.insertPlainText("self.consoleT_insert\r\n")
 
-        if self.com_option.currentText() in GlobalVariable.opencomlist:
-            #说明串口已经打开了
-            print(self.com_option.currentText(),"串口已经打开了")
+                #对console_terminal进行事件过滤
+                console_terminal.installEventFilter(subwindow)
+                console_terminal.selectionChanged.connect(lambda: self.textCopy(console_terminal))  #选择文本自动复制
+                
+                #对终端设置window标题
+                if self.renameconsole.text() != "":
+                    subwindow.setWindowTitle(self.renameconsole.text())
+                else:
+                    subwindow.setWindowTitle(self.com_option.currentText())
+                self.mdiArea.addSubWindow(subwindow)
+                
+                subwindow.setAttribute(Qt.WA_DeleteOnClose) #设置subwindow属性，当点击关闭时删除对象
+                subwindow.setWindowFlags(Qt.WindowTitleHint)
+                subwindow.show()
+                # print("当前sub窗口是：",self.mdiArea.currentSubWindow())   #TODO 后续删除
+
+                GlobalVariable.SelectCom=self.com_option.currentText()
+                # print("selectCOM is:",GlobalVariable.SelectCom)
+                # print("port是:",self._ports[self.com_option.currentText()])
+                GlobalVariable.setting_stop_bit=self.stop_bit.currentText()
+                GlobalVariable.setting_data_bits= self.data_bits.currentText()
+                GlobalVariable.setting_checksum_bits=self.checksum_bits.currentText()
+                GlobalVariable.setting_baud_rate_option= self.baud_rate_option.currentText()
+
+                print('%-25s: %s, %s,' % ("mainwindow_slot", QThread.currentThread(), int(QThread.currentThreadId())))
+                print('%-25s: %s, %s,' % ("mainwindow_slot", threading.current_thread().name, threading.current_thread().ident))
+                
+                #创建新线程，初始化一个串口
+                self.console_terminal_threadpool.append(SerialThread())
+                consolethread=SerialConsoleThread(self.com_option.currentText())  #需要传入打开的串口名self.com_option.currentText()
+                consolethread.moveToThread(self.console_terminal_threadpool[-1])
+                self.console_terminal_threadpool[-1].started.connect(consolethread.serial_init)
+                consolethread.rec_trigger.connect(self.rec_comdata_slot, Qt.QueuedConnection)  #
+                consolethread.send_trigger.connect(consolethread.sendto_comdata_slot)
+                self.console_terminal_threadpool[-1].start() 
+
+                #保存所有参数到GlobalVariable.Console字典列表
+                consoledict={"type":"serial",  
+                            "name":self.com_option.currentText(), "customname": self.renameconsole.text(),
+                            "subwindowobj": subwindow, "consoleobj":console_terminal,
+                            "consolethread":consolethread, "threadpool":self.console_terminal_threadpool[-1],
+                            "encodingtype":self.encodingtype.currentText()
+                            }
+                GlobalVariable.Console.append(consoledict)
+                # print("consoledictlist is :", GlobalVariable.Console)
+
+                # consolethread.send_trigger.emit("test_emit:".encode(encodingType)) # TODO:后续需要删除
+                # subwindow.sendanalyze_arg(consolethread)
+                # self.console_terminal[comThreadCounter].selectionChanged.connect(lambda: self.console_terminal[comThreadCounter].copy())  #选择文本自动复制
+                
+                # subwindow.widget().insertPlainText("%s is %s\r\n" % (GlobalVariable.Console,subwindow)) # TODO:后续需要删除
+                self.statusbar.showMessage("串口打开成功")
+                return True  #创建串口线程成功
+        else:
+            # print(self.com_option.currentText(),"串口已经打开了")
             self.statusbar.showMessage("串口已经打开了")
             self.textEdit_message.insertPlainText("%s串口已经打开了\r\n" % self.com_option.currentText())
-            
-        elif self.tryopencom() == True: #串口没打开则新建串口线程
-            try:
-                if self.console_terminal_threadpool[GlobalVariable.comThreadCounter] != None:
-                    GlobalVariable.comThreadCounter+=1
-                    self.console_terminal_threadpool.append(None)
-            except Exception:
-                self.console_terminal_threadpool.append(None)
 
-            if self.console_terminal_threadpool[GlobalVariable.comThreadCounter] == None:
-                print("开始创建com线程")
-                ok=self.newCom_MdiThread(GlobalVariable.comThreadCounter) 
-                if ok == True:
-                    GlobalVariable.comThreadCounter+=1
-                else:
-                    pass  #创建串口线程不成功，需要另外处理
-            else:
-                print("当前线程池不为空")
-                self.console_terminal_threadpool.append(None)
-                ok=self.newCom_MdiThread(GlobalVariable.comThreadCounter+1) 
-                if ok == True:
-                    GlobalVariable.comThreadCounter+=1
-                else:
-                    pass  #创建串口线程不成功，需要另外处理
-                
-    
-    def newCom_MdiThread(self,comThreadCounter):  #新建Mdi页串口和新线程
-        #创建一个MDIarea的sub窗口
-        try:
-            self.subwindow[comThreadCounter] = NewMdiSubWindow()
-        except Exception:
-            self.subwindow.append(None)
-            self.subwindow[comThreadCounter] = NewMdiSubWindow()
-        self.subwindow[comThreadCounter].setMain(self)
-        
-        # 向sub内部添加QTextEdit控件
-        self.subwindow[comThreadCounter].setWidget(QtWidgets.QTextEdit())
-        # print("subwidget_objname:",sub.widget().objectName())
-        self.subwindow[comThreadCounter].widget().insertPlainText("%d is %s\r\n" % (comThreadCounter,self.subwindow[comThreadCounter]))
-        
-        try:
-            self.console_terminal[comThreadCounter]=self.subwindow[comThreadCounter].widget()
-        except Exception:
-            self.console_terminal.append(None)
-            self.console_terminal[comThreadCounter]=self.subwindow[comThreadCounter].widget()
-
-        # print("self.console_terminal",self.console_terminal)
-        # print("self.cstext_cur",self.console_terminal.textCursor())
-        self.console_terminal[comThreadCounter].insertPlainText("self.consoleT_insert\r\n")
-        
-
-        GlobalVariable.mdisubwindow_objlist.append(self.subwindow[comThreadCounter])
-        GlobalVariable.opencom_objlist.append(self.console_terminal[comThreadCounter])  #####临时放这里！！！
-        #对console_terminal进行事件过滤
-        self.console_terminal[comThreadCounter].installEventFilter(self.subwindow[comThreadCounter])
-
-        self.subwindow[comThreadCounter].setWindowTitle(self.com_option.currentText())
-        self.mdiArea.addSubWindow(self.subwindow[comThreadCounter])
-        # objectname="subwindow"+str(self.count+1)
-        # sub.setObjectName(objectname)
-        self.subwindow[comThreadCounter].setAttribute(Qt.WA_DeleteOnClose) #设置subwindow属性，当点击关闭时删除对象
-        self.subwindow[comThreadCounter].setWindowFlags(Qt.WindowTitleHint)
-        self.subwindow[comThreadCounter].show()
-
-        #将选项卡中的com名传递到线程内
-        GlobalVariable.SelectCom=self.com_option.currentText()
-        print("selectCOM is:",GlobalVariable.SelectCom)
-        # GlobalVariable.SelectComINFO=self._ports[self.com_option.currentText()]
-        print("port是:",self._ports[self.com_option.currentText()])
-        GlobalVariable.setting_stop_bit=self.stop_bit.currentText()
-        GlobalVariable.setting_data_bits= self.data_bits.currentText()
-        GlobalVariable.setting_checksum_bits=self.checksum_bits.currentText()
-        GlobalVariable.setting_baud_rate_option= self.baud_rate_option.currentText()
-
-        print('%-25s: %s, %s,' % ("mainwindow_slot", QThread.currentThread(), int(QThread.currentThreadId())))
-        print('%-25s: %s, %s,' % ("mainwindow_slot", threading.current_thread().name, threading.current_thread().ident))
-        #创建新线程，初始化一个串口
-        # self.console_terminal_threadpool[comThreadCounter] = None
-        self.console_terminal_threadpool[comThreadCounter] = SerialThread() #self.com_option.currentText()
-        try:
-            self.analyze[comThreadCounter]=AnalyzObject(comThreadCounter)
-        except Exception:
-            self.analyze.append(None)
-            self.analyze[comThreadCounter]=AnalyzObject(comThreadCounter)
-        self.analyze[comThreadCounter].moveToThread(self.console_terminal_threadpool[comThreadCounter])
-        self.console_terminal_threadpool[comThreadCounter].started.connect(self.analyze[comThreadCounter].serial_init)
-        self.analyze[comThreadCounter].rec_trigger.connect(self.rec_comdata_slot,Qt.QueuedConnection)  #
-        self.analyze[comThreadCounter].send_trigger.connect(self.analyze[comThreadCounter].sendto_comdata_slot)
-        self.console_terminal_threadpool[comThreadCounter].start() 
-
-        self.subwindow[comThreadCounter].sendanalyze_arg(self.analyze[comThreadCounter],comThreadCounter)
-        # self.console_terminal[comThreadCounter].selectionChanged.connect(lambda: self.console_terminal[comThreadCounter].copy())  #选择文本自动复制
-        # self.analyze.send_trigger.emit("test_emit:".encode(encodingType))
-        return True  #创建串口线程成功
-        """
-        if self.serial.isOpen():
-            # 如果串口是打开状态则关闭
-            self.serial.close()
-            self.console_terminal.append('串口已关闭')        #textBrowser.append('串口已关闭')
-            logger.info("串口已关闭")
-            self.open_close_buttom.setText('点击打开串口')
-            #self.labelStatus.setProperty('isOn', False)
-            #self.labelStatus.style().polish(self.labelStatus)  # 刷新样式
-            self.open_close_buttom.setStyleSheet("color:rgb(255, 0, 0);\n"
-"font: 9pt \"黑体\";\n"
-"selection-color: qconicalgradient(cx:0, cy:0, angle:135, stop:0 rgba(255, 255, 0, 69), stop:0.375 rgba(255, 255, 0, 69), stop:0.423533 rgba(251, 255, 0, 145), stop:0.45 rgba(247, 255, 0, 208), stop:0.477581 rgba(255, 244, 71, 130), stop:0.518717 rgba(255, 218, 71, 130), stop:0.55 rgba(255, 255, 0, 255), stop:0.57754 rgba(255, 203, 0, 130), stop:0.625 rgba(255, 255, 0, 69), stop:1 rgba(255, 255, 0, 69));")
-            
-            return
-        """
-
-        #发送连接串口信号在线程中配置串口
-        """
-        # 根据配置连接串口
-        port = self._ports[self.com_option.currentText()]
-        print("port:",port)
-#         self._serial.setPort(port)
-        # 根据名字设置串口（也可以用上面的函数）
-        self.serial.setPortName(port.systemLocation())
-        print("syslocation:",port.systemLocation())
-        # 设置波特率
-        self.serial.setBaudRate(  # 动态获取,类似QSerialPort::Baud9600这样的吧
-            getattr(QSerialPort, 'Baud' + self.baud_rate_option.currentText()))
-        # 设置校验位
-        self.serial.setParity(  # QSerialPort::NoParity
-            getattr(QSerialPort, self.checksum_bits.currentText() + 'Parity'))
-        # 设置数据位
-        self.serial.setDataBits(  # QSerialPort::Data8
-            getattr(QSerialPort, 'Data' + self.data_bits.currentText()))
-        # 设置停止位
-        self.serial.setStopBits(  # QSerialPort::Data8
-            getattr(QSerialPort, self.stop_bit.currentText()))
-
-        # NoFlowControl          没有流程控制
-        # HardwareControl        硬件流程控制(RTS/CTS)
-        # SoftwareControl        软件流程控制(XON/XOFF)
-        # UnknownFlowControl     未知控制
-        self.serial.setFlowControl(QSerialPort.NoFlowControl)
-        # 读写方式打开串口
-        ok = self.serial.open(QIODevice.ReadWrite) 
-        print(ok)
-        """
-        """
-        if ok:
-            self.console_terminal.append('打开串口成功')
-            logger.info("打开串口成功")
-            self.statusbar.showMessage("打开串口成功")
-            self.open_close_buttom.setText('点击关闭串口')
-            #self.labelStatus.setProperty('isOn', True)
-            #self.labelStatus.style().polish(self.labelStatus)  # 刷新样式
-            self.open_close_buttom.setStyleSheet("color:rgb(0, 0, 255);\n"
-"font: 9pt \"黑体\";\n"
-"selection-color: qconicalgradient(cx:0, cy:0, angle:135, stop:0 rgba(255, 255, 0, 69), stop:0.375 rgba(255, 255, 0, 69), stop:0.423533 rgba(251, 255, 0, 145), stop:0.45 rgba(247, 255, 0, 208), stop:0.477581 rgba(255, 244, 71, 130), stop:0.518717 rgba(255, 218, 71, 130), stop:0.55 rgba(255, 255, 0, 255), stop:0.57754 rgba(255, 203, 0, 130), stop:0.625 rgba(255, 255, 0, 69), stop:1 rgba(255, 255, 0, 69));")
-        
-            #状态栏显示串口信息
-            self.statusbar.showMessage("Connected in %s of %s "% (getattr(QSerialPort, 'Baud' + self.baud_rate_option.currentText()),self.com_option.currentText()))
-            self.clientSetting.close() 
-
-        else:
-            self.console_terminal.append('打开串口失败')
-            logger.info("打开串口失败")
-            self.statusbar.showMessage("打开串口失败")
-            self.open_close_buttom.setText('点击打开串口')
-            #self.labelStatus.setProperty('isOn', False)
-            #self.labelStatus.style().polish(self.labelStatus)  # 刷新样式
-            self.open_close_buttom.setStyleSheet("color:rgb(255, 0, 0);\n"
-"font: 9pt \"黑体\";\n"
-"selection-color: qconicalgradient(cx:0, cy:0, angle:135, stop:0 rgba(255, 255, 0, 69), stop:0.375 rgba(255, 255, 0, 69), stop:0.423533 rgba(251, 255, 0, 145), stop:0.45 rgba(247, 255, 0, 208), stop:0.477581 rgba(255, 244, 71, 130), stop:0.518717 rgba(255, 218, 71, 130), stop:0.55 rgba(255, 255, 0, 255), stop:0.57754 rgba(255, 203, 0, 130), stop:0.625 rgba(255, 255, 0, 69), stop:1 rgba(255, 255, 0, 69));")
-        
-        #MainWindow.setStyleSheet(self,"#labelStatus{border-radius:20px;background-color:gray;}""#labelStatus[isOn=\"true\"]{background-color: green;}")    
-        """
   
     @pyqtSlot()
     def on_send_button_clicked(self):
-        if self.timer_send_checkbox.checkState():
+        if self.timer_send_checkbox.checkState(): #如果勾选定时发送，则定时发送。否则发送后清空发送缓冲区
             self.sendtoconsole()
         else:
             self.sendtoconsole()
@@ -568,53 +450,67 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
             
     def sendtoconsole(self):
         # 发送消息
-        if not self._serial.isOpen():
-            print('串口未连接')
-            return
-        text = self.plainTextEdit.toPlainText()
-        if not text:
-            return
-        """
-        以下代码引入VT102后 需要修改
-        """
-        #print('发送数据前:', text)
-        #print('切片数据前:', type(text))
-        text=text.split('\n')
-        #print('切片后:', text)
-        #print('切片后:', type(text))
-        text2 = []
-        #print('初始化text2:', text2)
-        for index in range(len(text)):
-            text2.append(text[index])   #encode('utf-8')   'gb2312' emmm windows 测试的工具貌似是这个编码
-        #print('发送前:', text2)
-        #print('发送前:', type(text2))
+        if self.mdiArea.currentSubWindow() != None:  #判断是否有可用终端
+            index = self.find_dictionarylist_keyvalue_index(GlobalVariable.Console, "subwindowobj", self.mdiArea.currentSubWindow())
+            text = self.plainTextEdit.toPlainText()
+            # text+="\r\n"   #TODO 这里是否要加回车换行取决于 ctrl+C等组合键是否能够正常发送
+            if not text:
+                return
+            GlobalVariable.Console[index]["consolethread"].send_trigger.emit(text.encode(GlobalVariable.Console[index]["encodingtype"]))
         
-        if self.hex_send.isChecked():
-            # 如果勾选了hex发送            
+        else:
+            self.textEdit_message.insertPlainText("无可用终端\r\n")
+        
+
+
+
+        # if not self._serial.isOpen():
+        #     print('串口未连接')
+        #     return
+        # text = self.plainTextEdit.toPlainText()
+        # if not text:
+        #     return
+        # """
+        # 以下代码引入VT102后 需要修改
+        # """
+        # #print('发送数据前:', text)
+        # #print('切片数据前:', type(text))
+        # text=text.split('\n')
+        # #print('切片后:', text)
+        # #print('切片后:', type(text))
+        # text2 = []
+        # #print('初始化text2:', text2)
+        # for index in range(len(text)):
+        #     text2.append(text[index])   #encode('utf-8')   'gb2312' emmm windows 测试的工具貌似是这个编码
+        # #print('发送前:', text2)
+        # #print('发送前:', type(text2))
+        
+        # if self.hex_send.isChecked():
+        #     # 如果勾选了hex发送            
             
-            text = text.toHex()
-        # 发送数据
-        #print('发送数据:', text2)
-        for key2 in range(len(text2)):
-            #print("准备发送：",text2[key2])
-            self._serial.write(QByteArray((text2[key2].strip()+'\r').encode('gb2312')))
-            #print("发送：",text2[key2].encode('gb2312'))
+        #     text = text.toHex()
+        # # 发送数据
+        # #print('发送数据:', text2)
+        # for key2 in range(len(text2)):
+        #     #print("准备发送：",text2[key2])
+        #     self._serial.write(QByteArray((text2[key2].strip()+'\r').encode('gb2312')))
+        #     #print("发送：",text2[key2].encode('gb2312'))
             
         
-        #显示发送与接收的字符数量
+        # #显示发送与接收的字符数量
                 
-        #在状态栏显示收发数量
-        #dis = '发送：'+ '{:d}'.format(self.send_num) + '  接收:' + '{:d}'.format(self.receive_num)
-        #dis=5
-        #self.statusbar.showMessage(dis)
+        # #在状态栏显示收发数量
+        # #dis = '发送：'+ '{:d}'.format(self.send_num) + '  接收:' + '{:d}'.format(self.receive_num)
+        # #dis=5
+        # #self.statusbar.showMessage(dis)
         
-        #采用VT102终端后 此段删除
-        #将光标移动到最后--此处接收控件应该是QTextEdit，注意区别，需要用console_terminal对象
-        cursor = self.console_terminal.textCursor()
-        if(cursor != cursor.End):
-            cursor.movePosition(cursor.End)
-            self.console_terminal.setTextCursor(cursor)
-            #print('光标已移动到最后')
+        # #采用VT102终端后 此段删除
+        # #将光标移动到最后--此处接收控件应该是QTextEdit，注意区别，需要用console_terminal对象
+        # cursor = self.console_terminal.textCursor()
+        # if(cursor != cursor.End):
+        #     cursor.movePosition(cursor.End)
+        #     self.console_terminal.setTextCursor(cursor)
+        #     #print('光标已移动到最后')
 
             
     """全部移入线程内
@@ -757,13 +653,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         #这里放的位置不知道对不对
         # super(MainWindow, self).closeEvent(event)
 
-    @pyqtSlot()
-    def on_clear_button_clicked(self):
-        """
-        清除接收显示
-        """
-        self.console_terminal.clear()
-        #self.clear_button.clicked.connect(self.textBrowser.clear)
+
 
     @pyqtSlot()
     def on_check_com_clicked(self):
@@ -781,18 +671,18 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         newTelnet.setMain(self)
         newTelnet.exec_()
  
-    @pyqtSlot()
-    def on_btnSaveLog_clicked(self):
-        """
-        点击保存log
-        """
-        fileName, type = QFileDialog.getSaveFileName(self, "Save as", os.getcwd(),   
-            "Log files (*.log);;Text files (*.txt);;All files (*.*)")
-        if fileName:
-            import codecs
-            f = codecs.open(fileName, 'w', 'utf-8')
-            f.write(self.console_terminal.toPlainText())
-            f.close()
+    # @pyqtSlot()
+    # def on_btnSaveLog_clicked(self):
+    #     """
+    #     点击保存log
+    #     """
+    #     fileName, type = QFileDialog.getSaveFileName(self, "Save as", os.getcwd(),   
+    #         "Log files (*.log);;Text files (*.txt);;All files (*.*)")
+    #     if fileName:
+    #         import codecs
+    #         f = codecs.open(fileName, 'w', 'utf-8')
+    #         f.write(self.console_terminal.toPlainText())
+    #         f.close()
 
         
     # @pyqtSlot(QTreeWidgetItem, int)
@@ -911,23 +801,26 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
     @pyqtSlot()
     def on_timer_send_checkbox_clicked(self):
         """
-        Slot documentation goes here.
+        定时发送
         """
         if self.timer_send_checkbox.checkState():
-            try:
-                time = self.timer_lineEdit.text()
-                print(time)
-                time_val = int(time, 10) #base=10 十进制
-                print(time_val)
-                if time_val == 0:
-                    QMessageBox.critical(self, 'pycom','定时时间必须大于零!')
-                    return None
-                else:
-                    #定时间隔发送
-                    self.timer_send.start(time_val)
-            except  Exception:
-                QMessageBox.critical(self, 'pycom','请输入有效的定时时间!')
-                return    
+            # try:
+            time = self.timer_lineEdit.text()
+            if float(time) < 1:
+                time_val = float(time)*1000
+                time_val = int(time_val)
+            #定时器是ms为单位，需要将s转换为ms
+            else :
+                time_val = int(time, 10)*1000 #base=10 十进制
+            if time_val == 0:
+                QMessageBox.critical(self, 'pycom','定时时间必须大于零!')
+                return None
+            else:
+                #定时间隔发送
+                self.timer_send.start(time_val)
+            # except  Exception:
+            #     QMessageBox.critical(self, 'pycom','请输入有效的定时时间!')
+            #     return    
         else:
             self.timer_send.stop()
 
@@ -939,13 +832,34 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         self.on_timer_send_checkbox_clicked()
 
     @pyqtSlot()
-    def on_actionvlan_triggered(self):
+    def on_clearsendbuffer_clicked(self):
         """
-        vlan配置
+        清空发送缓冲区
         """
-        vlanConfig1 = VlanConfig()  #由于不需要设置任何对象的属性，所以不需要参数
-        vlanConfig1.setMain(self)
-        vlanConfig1.exec_()
+        self.plainTextEdit.clear()
+
+    @pyqtSlot()
+    def on_keycombination_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        keycombination = KeyCombination()  #由于不需要设置任何对象的属性，所以不需要参数
+        keycombination.setMain(self)
+        keycombination.exec_()
+
+    @pyqtSlot()
+    def on_select_logdir_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        
+        fileName, type = QFileDialog.getSaveFileName(self, "Save as", os.getcwd(),   
+                    "Log files (*.log);;Text files (*.txt);;All files (*.*)")
+        self.savelogdir.clear()           
+        self.savelogdir.insert(fileName)
+        
+
+
     @pyqtSlot()
     def on_actionvlan_config_triggered(self):
         """
@@ -1038,6 +952,15 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         self.clientSetting.show()
         
 ####工具菜单########
+    @pyqtSlot()
+    def on_actionvlan_triggered(self):
+        """
+        vlan配置
+        """
+        vlanConfig1 = VlanConfig()  #由于不需要设置任何对象的属性，所以不需要参数
+        vlanConfig1.setMain(self)
+        vlanConfig1.exec_()
+
     @pyqtSlot()
     def on_actionloganalyzer_triggered(self):
         """
@@ -1222,6 +1145,16 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         """
         self.quickcommand_right_menu(QCursor.pos())
 
+#####quickcommand快速命令栏######
+    @pyqtSlot()
+    def actiontoolbar_sendcommand_triggered(self,command):
+        print("command is :",command)
+        char=command+"\r\n"
+        #获取最前端激活的窗口
+        index = self.find_dictionarylist_keyvalue_index(GlobalVariable.Console, "subwindowobj", self.mdiArea.currentSubWindow())
+        GlobalVariable.Console[index]["consolethread"].send_trigger.emit(char.encode(GlobalVariable.Console[index]["encodingtype"]))
+        # self._serial.write(char.encode(encodingType))
+
     #工具栏右键菜单    
     def quickcommand_right_menu(self,pos):
         menu = QMenu()
@@ -1300,17 +1233,26 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
             GlobalVariable.hoverd_action = ""
             return    
          
-    def rec_comdata_slot(self,comThreadCounter,data): #
-        print("rec_comdata_slot comThreadCounter is",comThreadCounter,self.console_terminal)
-        cursor = self.console_terminal[comThreadCounter].textCursor()
-        if(cursor != cursor.End):
-            cursor.movePosition(cursor.End)
-            self.console_terminal[comThreadCounter].setTextCursor(cursor)
+    def rec_comdata_slot(self,serialobj,data):
+        """
+        接收串口数据的槽函数，并将数据插入到console_terminal上显示
+        Args:
+            serialobj:线程中的串口对象
+            data：线程中串口发送过来的数据
+        """
+        # print("rec_comdata_slot serialobj is", serialobj)
+        index = GlobalVariable.mainwindow.find_dictionarylist_keyvalue_index(GlobalVariable.Console, "serialobj", serialobj)
+        
+        if index >= 0:
+            console_terminal = GlobalVariable.Console[index]["consoleobj"]
+            cursor = console_terminal.textCursor()
+            if(cursor != cursor.End):
+                cursor.movePosition(cursor.End)
+                console_terminal.setTextCursor(cursor)
 
-        self.console_terminal[comThreadCounter].insertPlainText(data)
+            console_terminal.insertPlainText(data)   #TODO 是否需要编解码.encode(GlobalVariable.Console[index]["encodingtype"])
 
-    def roolback_comthread(self):
-        pass
+
     def tryopencom(self):
         self._serial = QSerialPort(self)  # 用于连接串口的对象
         port = self._ports[self.com_option.currentText()]
@@ -1337,15 +1279,16 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         if self._serial.isOpen():
             # 如果串口是打开状态则关闭
             self._serial.close()
-            print("串口已经打开，关闭串口")
+            # print("串口已经打开，关闭串口")
             return False
         elif self._serial.open(QIODevice.ReadWrite) == True:
-            print("串口打开成功说明串口未被占用，先关闭串口")
+            # print("串口打开成功说明串口未被占用，先关闭串口")
             self._serial.close()
             return True
         else:
-            print("串口对象是",self._serial)
-            print("串口被占用无法打开")
+            # print("串口对象是",self._serial)
+            # print("串口被占用无法打开")
+            self.textEdit_message.insertPlainText("%s串口被占用无法打开\r\n" % self.com_option.currentText())
             return False
 
         
