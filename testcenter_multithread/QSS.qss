@@ -1,0 +1,5 @@
+QPushButton#send_button:hover { background: green; }
+
+QPushButton#send_button{
+color: rgb(0,0,255);
+}

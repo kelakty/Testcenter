@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>775</width>
+    <width>768</width>
     <height>726</height>
    </rect>
   </property>
@@ -39,7 +39,7 @@
    <bool>true</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_2">
+   <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <widget class="QMdiArea" name="mdiArea">
       <property name="viewMode">
@@ -63,7 +63,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>775</width>
+     <width>768</width>
      <height>23</height>
     </rect>
    </property>
@@ -90,8 +90,6 @@
      <property name="title">
       <string>运行脚本</string>
      </property>
-     <addaction name="actionVBScript"/>
-     <addaction name="actionJavaScript"/>
      <addaction name="actionPython"/>
     </widget>
     <addaction name="scripts"/>
@@ -190,6 +188,8 @@
     <addaction name="active_sequencer"/>
     <addaction name="active_serial_setting"/>
     <addaction name="actionShowToolBar"/>
+    <addaction name="actionshow_send_buffer_area"/>
+    <addaction name="actionshow_message_area"/>
    </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
@@ -354,6 +354,11 @@ selection-color: qconicalgradient(cx:0, cy:0, angle:135, stop:0 rgba(255, 255, 0
        <item>
         <property name="text">
          <string>GB2312</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>GBK</string>
         </property>
        </item>
        <item>
@@ -637,6 +642,9 @@ selection-color: qconicalgradient(cx:0, cy:0, angle:135, stop:0 rgba(255, 255, 0
        <property name="text">
         <string>保存log</string>
        </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
       </widget>
       <widget class="QPushButton" name="select_logdir">
        <property name="geometry">
@@ -728,8 +736,8 @@ selection-color: qconicalgradient(cx:0, cy:0, angle:135, stop:0 rgba(255, 255, 0
    </property>
    <property name="minimumSize">
     <size>
-     <width>0</width>
-     <height>111</height>
+     <width>248</width>
+     <height>615</height>
     </size>
    </property>
    <property name="baseSize">
@@ -751,7 +759,7 @@ selection-color: qconicalgradient(cx:0, cy:0, angle:135, stop:0 rgba(255, 255, 0
     <number>2</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_3">
-    <layout class="QVBoxLayout" name="verticalLayout">
+    <layout class="QVBoxLayout" name="verticalLayout_2">
      <property name="leftMargin">
       <number>0</number>
      </property>
@@ -765,40 +773,53 @@ selection-color: qconicalgradient(cx:0, cy:0, angle:135, stop:0 rgba(255, 255, 0
       <number>0</number>
      </property>
      <item>
-      <widget class="QGroupBox" name="groupBoxSequenceToolBar">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
+      <widget class="QSplitter" name="splitter">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
        </property>
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>21</height>
-        </size>
-       </property>
-       <property name="title">
-        <string/>
-       </property>
-       <widget class="QWidget" name="layoutWidget_2">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>0</y>
-          <width>248</width>
-          <height>26</height>
-         </rect>
+       <widget class="QGroupBox" name="groupBoxSequenceToolBar">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>21</height>
+         </size>
+        </property>
+        <property name="title">
+         <string/>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
          <property name="spacing">
           <number>0</number>
          </property>
          <property name="sizeConstraint">
           <enum>QLayout::SetNoConstraint</enum>
          </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
          <item>
-          <widget class="QToolButton" name="toolButton_9">
+          <widget class="QToolButton" name="run_test_sequence">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="styleSheet">
             <string notr="true"/>
            </property>
@@ -816,7 +837,13 @@ selection-color: qconicalgradient(cx:0, cy:0, angle:135, stop:0 rgba(255, 255, 0
           </widget>
          </item>
          <item>
-          <widget class="QToolButton" name="toolButton_10">
+          <widget class="QToolButton" name="pause_test_sequence">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="styleSheet">
             <string notr="true"/>
            </property>
@@ -834,7 +861,13 @@ selection-color: qconicalgradient(cx:0, cy:0, angle:135, stop:0 rgba(255, 255, 0
           </widget>
          </item>
          <item>
-          <widget class="QToolButton" name="toolButton_11">
+          <widget class="QToolButton" name="move_to_previous_section">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="styleSheet">
             <string notr="true"/>
            </property>
@@ -852,7 +885,13 @@ selection-color: qconicalgradient(cx:0, cy:0, angle:135, stop:0 rgba(255, 255, 0
           </widget>
          </item>
          <item>
-          <widget class="QToolButton" name="toolButton_12">
+          <widget class="QToolButton" name="move_to_next_section">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="styleSheet">
             <string notr="true"/>
            </property>
@@ -870,7 +909,13 @@ selection-color: qconicalgradient(cx:0, cy:0, angle:135, stop:0 rgba(255, 255, 0
           </widget>
          </item>
          <item>
-          <widget class="QToolButton" name="toolButton_13">
+          <widget class="QToolButton" name="stop_test_sequence">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="styleSheet">
             <string notr="true"/>
            </property>
@@ -888,7 +933,55 @@ selection-color: qconicalgradient(cx:0, cy:0, angle:135, stop:0 rgba(255, 255, 0
           </widget>
          </item>
          <item>
-          <widget class="QToolButton" name="toolButton_14">
+          <widget class="QToolButton" name="import_to_sequencer">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(215, 255, 223);</string>
+           </property>
+           <property name="text">
+            <string>导入</string>
+           </property>
+           <property name="autoRaise">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="save_sequence_to_txt">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="styleSheet">
+            <string notr="true"> border: none; 
+background-color: rgb(174, 255, 188);</string>
+           </property>
+           <property name="text">
+            <string>导出</string>
+           </property>
+           <property name="autoRaise">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="update_sequence">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="autoFillBackground">
             <bool>false</bool>
            </property>
@@ -904,200 +997,122 @@ selection-color: qconicalgradient(cx:0, cy:0, angle:135, stop:0 rgba(255, 255, 0
            </property>
           </widget>
          </item>
+        </layout>
+       </widget>
+       <widget class="QGroupBox" name="groupBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>23</height>
+         </size>
+        </property>
+        <property name="title">
+         <string/>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
          <item>
-          <widget class="QToolButton" name="toolButton_15">
-           <property name="styleSheet">
-            <string notr="true"> border: none; 
-background-color: rgb(174, 255, 188);</string>
+          <widget class="QPushButton" name="add_one_row">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
            </property>
            <property name="text">
-            <string>保存</string>
-           </property>
-           <property name="autoRaise">
-            <bool>true</bool>
+            <string>添加一行</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QToolButton" name="toolButton_16">
-           <property name="styleSheet">
-            <string notr="true">background-color: rgb(215, 255, 223);</string>
+          <widget class="QPushButton" name="delete_one_row">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
            </property>
            <property name="text">
-            <string>导入</string>
-           </property>
-           <property name="autoRaise">
-            <bool>true</bool>
+            <string>删除选中行</string>
            </property>
           </widget>
          </item>
         </layout>
        </widget>
-      </widget>
-     </item>
-     <item>
-      <widget class="QTreeWidget" name="treeWidget_sequencer">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="baseSize">
-        <size>
-         <width>10</width>
-         <height>12</height>
-        </size>
-       </property>
-       <property name="sizeAdjustPolicy">
-        <enum>QAbstractScrollArea::AdjustIgnored</enum>
-       </property>
-       <property name="autoExpandDelay">
-        <number>0</number>
-       </property>
-       <property name="indentation">
-        <number>10</number>
-       </property>
-       <property name="rootIsDecorated">
-        <bool>true</bool>
-       </property>
-       <property name="uniformRowHeights">
-        <bool>false</bool>
-       </property>
-       <property name="itemsExpandable">
-        <bool>true</bool>
-       </property>
-       <property name="headerHidden">
-        <bool>false</bool>
-       </property>
-       <property name="columnCount">
-        <number>3</number>
-       </property>
-       <attribute name="headerVisible">
-        <bool>true</bool>
-       </attribute>
-       <attribute name="headerDefaultSectionSize">
-        <number>100</number>
-       </attribute>
-       <attribute name="headerHighlightSections">
-        <bool>false</bool>
-       </attribute>
-       <attribute name="headerShowSortIndicator" stdset="0">
-        <bool>false</bool>
-       </attribute>
-       <attribute name="headerStretchLastSection">
-        <bool>true</bool>
-       </attribute>
-       <column>
-        <property name="text">
-         <string>命令</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>说明</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>备注</string>
-        </property>
-       </column>
-       <item>
-        <property name="text">
-         <string>show version detail </string>
-        </property>
-        <property name="checkState">
-         <enum>Checked</enum>
-        </property>
-        <property name="text">
-         <string>show信息</string>
-        </property>
-        <property name="text">
-         <string>客户端 dut1主</string>
-        </property>
-        <item>
+       <widget class="QTableWidget" name="sequencertable">
+        <column>
          <property name="text">
-          <string>scan</string>
+          <string>是否测试</string>
          </property>
-         <property name="checkState">
-          <enum>Checked</enum>
-         </property>
+        </column>
+        <column>
          <property name="text">
-          <string>识别对应信息是否正确</string>
+          <string>终端名</string>
          </property>
-         <property name="flags">
-          <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
-         </property>
-        </item>
-        <item>
+        </column>
+        <column>
          <property name="text">
-          <string>print log</string>
+          <string>发送指令</string>
          </property>
-         <property name="checkState">
-          <enum>Checked</enum>
-         </property>
+        </column>
+        <column>
          <property name="text">
-          <string>打印报告</string>
+          <string>等待回显时间</string>
          </property>
-         <property name="flags">
-          <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
-         </property>
-        </item>
-       </item>
-       <item>
-        <property name="text">
-         <string>sh pow </string>
-        </property>
-        <property name="checkState">
-         <enum>Checked</enum>
-        </property>
-        <property name="text">
-         <string>show电源信息</string>
-        </property>
-        <property name="text">
-         <string>客户端 duit1 从</string>
-        </property>
-        <property name="flags">
-         <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
-        </property>
-        <item>
+        </column>
+        <column>
          <property name="text">
-          <string>scan</string>
+          <string>需匹配文本</string>
          </property>
-         <property name="checkState">
-          <enum>Checked</enum>
-         </property>
+        </column>
+        <column>
          <property name="text">
-          <string>识别对应信息是否正确</string>
+          <string>不能匹配到文本</string>
          </property>
-         <property name="flags">
-          <set>ItemIsSelectable|ItemIsEditable|ItemIsDragEnabled|ItemIsUserCheckable|ItemIsEnabled</set>
+        </column>
+        <column>
+         <property name="text">
+          <string>执行完是否清空log缓存</string>
          </property>
-        </item>
-       </item>
-       <item>
-        <property name="text">
-         <string>XXX</string>
-        </property>
-        <property name="text">
-         <string>发包机打流</string>
-        </property>
-        <property name="text">
-         <string>客户端 发包机</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>XXX</string>
-        </property>
-        <property name="text">
-         <string>自动上下电</string>
-        </property>
-        <property name="text">
-         <string>客户端 串口自动上下电工具</string>
-        </property>
-       </item>
+        </column>
+        <column>
+         <property name="text">
+          <string>单独保存log到文件</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>生成报告文件</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>说明</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>备注</string>
+         </property>
+        </column>
+       </widget>
       </widget>
      </item>
     </layout>
@@ -1147,7 +1162,7 @@ background-color: rgb(174, 255, 188);</string>
    <property name="minimumSize">
     <size>
      <width>176</width>
-     <height>0</height>
+     <height>155</height>
     </size>
    </property>
    <property name="sizeIncrement">
@@ -1280,7 +1295,7 @@ background-color: rgb(174, 255, 188);</string>
    <property name="minimumSize">
     <size>
      <width>200</width>
-     <height>0</height>
+     <height>93</height>
     </size>
    </property>
    <property name="floating">
@@ -1586,6 +1601,10 @@ background-color: rgb(174, 255, 188);</string>
    </property>
   </action>
   <action name="actionStartSession">
+   <property name="icon">
+    <iconset resource="iconresource.qrc">
+     <normaloff>:/Graphics/images/start.bmp</normaloff>:/Graphics/images/start.bmp</iconset>
+   </property>
    <property name="text">
     <string>开始队列测试</string>
    </property>
@@ -1641,11 +1660,19 @@ background-color: rgb(174, 255, 188);</string>
    </property>
   </action>
   <action name="actionStop_Test">
+   <property name="icon">
+    <iconset resource="iconresource.qrc">
+     <normaloff>:/Graphics/images/stop.png</normaloff>:/Graphics/images/stop.png</iconset>
+   </property>
    <property name="text">
     <string>终止测试</string>
    </property>
   </action>
   <action name="actionPause_Test">
+   <property name="icon">
+    <iconset resource="iconresource.qrc">
+     <normaloff>:/Graphics/images/pause.bmp</normaloff>:/Graphics/images/pause.bmp</iconset>
+   </property>
    <property name="text">
     <string>暂停测试</string>
    </property>
@@ -1722,9 +1749,31 @@ background-color: rgb(174, 255, 188);</string>
     <string>log分析</string>
    </property>
   </action>
+  <action name="actionshow_send_buffer_area">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>显示发送缓冲区</string>
+   </property>
+  </action>
+  <action name="actionshow_message_area">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>显示通知消息区</string>
+   </property>
+  </action>
+  <zorder>message_dockwidget</zorder>
   <zorder>Sequencer</zorder>
   <zorder>sendbuffer_dockwidget</zorder>
-  <zorder>message_dockwidget</zorder>
  </widget>
  <resources>
   <include location="iconresource.qrc"/>
