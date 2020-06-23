@@ -42,11 +42,14 @@ from subdialog.registerbaselinecheck import RegisterBaseLineCheck
 from subdialog.fanandtemptest import FanAndTempTest
 from subdialog.addquickcommand import AddQuickCommand
 from subdialog.selectpythonscript import selectpythonscript
+from subdialog.about import About
+from subdialog.loganalyzer import LogAnalyzer
+from sequenceandscript.factory_auto_test import FactoryAutoTestWorker
 from AutomationScript import CRT
 from serial_thread import SerialThread, SerialConsoleThread
 from sequencer import SequencerThreadWorker
 from console_init import ConsoleInit
-from subdialog.loganalyzer import LogAnalyzer
+
 
 from init import Init
 import time
@@ -784,6 +787,15 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         self.showcommoncommand.setMain(self)
         self.showcommoncommand.show()
 
+    @pyqtSlot()
+    def on_actionContactUs_triggered(self):
+        """
+        Slot documentation goes here.
+        """
+        self.about = About()
+        self.about.setMain(self)
+        self.about.exec_()
+
 ###测试向导-创建测试###
     @pyqtSlot()
     def on_create_test_triggered(self):
@@ -859,6 +871,49 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         self.fan_temp_test_obj=FanAndTempTest()
         self.fan_temp_test_obj.setMain(self)
         self.fan_temp_test_obj.show()
+
+    @pyqtSlot()
+    def on_action12_X_factory_auto_test_triggered(self):
+        """
+        Slot documentation goes here.
+        """
+        print("fac_auto_test线程是否正在运行",GlobalVariable.fac_auto_quick_test_working)
+        if GlobalVariable.fac_auto_quick_test_working == True:
+            print("关闭正在运行线程...")
+            self.fac_auto_test_finished()
+            GlobalVariable.fac_auto_quick_test_working = False
+        
+        #获取当前激活的终端
+        print("当前子窗口是：",self.mdiArea.currentSubWindow())
+        if self.mdiArea.currentSubWindow() != None:
+            self.current_console_index = self.find_dictionarylist_keyvalue_index(GlobalVariable.Console, "subwindowobj", self.mdiArea.currentSubWindow())
+            print("当前串口索引值：", self.current_console_index)
+            print(GlobalVariable.Console[self.current_console_index])
+            if self.current_console_index >= 0:
+                #串口线程中发送信号过来，通过sequencer相关的槽函数进行接收
+                GlobalVariable.Console[self.current_console_index]["consolethread"].rec_trigger.connect(self.sequencer_receive_data_slot, Qt.QueuedConnection) #将log放入log临时缓存区
+                
+                self.fac_auto_test_threadpool = QThread()
+                self.fac_auto_test_thread = FactoryAutoTestWorker(GlobalVariable.Console[self.current_console_index]["consolethread"])   #需要传入当前激活的终端名
+                self.fac_auto_test_thread.moveToThread(self.fac_auto_test_threadpool)
+                self.fac_auto_test_threadpool.started.connect( self.fac_auto_test_thread.run_auto_fac_test)
+                self.fac_auto_test_thread.fac_test_to_main_trigger.connect(self.sequencer_data_to_console_thread_slot, Qt.QueuedConnection)  #
+                # self.fac_auto_test_thread.main_to_fac_test_trigger.connect(self.fac_auto_test_thread.received_console_log)
+                # self.fac_auto_test_thread.choose_file_trigger.connect(self.sequencer_thread_choose_file)
+                self.fac_auto_test_thread.finished.connect(self.fac_auto_test_finished)  # tell the thread it's time to stop running
+                # self.fac_auto_test_thread.finished.connect(self.fac_auto_test_thread.deleteLater)  # have worker mark itself for deletion
+                # self.fac_auto_test_threadpool.finished.connect(self.fac_auto_test_threadpool.deleteLater)  # have thread mark itself for deletion
+                
+                GlobalVariable.fac_auto_quick_test_working = True
+                self.fac_auto_test_threadpool.start()
+                print("启动线程...")
+
+
+    def fac_auto_test_finished(self):
+        self.fac_auto_test_threadpool.quit
+        self.fac_auto_test_thread.deleteLater
+        self.fac_auto_test_threadpool.deleteLater
+
 ###脚本工具####
     @pyqtSlot()
     def on_actionPython_triggered(self):
@@ -1042,6 +1097,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         """
         Slot documentation goes here.
         """
+
         #判断线程是否正在执行没有结束
         GlobalVariable.sequencer_working = True
         #获取当前激活的终端
@@ -1093,9 +1149,10 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
                 self.sequencer_threadpool.started.connect( self.sequencer_thread.sequencer_worker)
                 self.sequencer_thread.seq_to_main_trigger.connect(self.sequencer_data_to_console_thread_slot, Qt.QueuedConnection)  #
                 self.sequencer_thread.main_to_seq_trigger.connect(self.sequencer_thread.received_console_log)
-                self.sequencer_thread.finished.connect(self.sequencer_threadpool.quit)  # tell the thread it's time to stop running
-                self.sequencer_thread.finished.connect(self.sequencer_thread.deleteLater)  # have worker mark itself for deletion
-                self.sequencer_threadpool.finished.connect(self.sequencer_threadpool.deleteLater)  # have thread mark itself for deletion
+                self.sequencer_thread.choose_file_trigger.connect(self.sequencer_thread_choose_file)
+                self.sequencer_thread.finished.connect(self.run_sequence_finished)  # tell the thread it's time to stop running
+                # self.sequencer_thread.finished.connect(self.sequencer_thread.deleteLater)  # have worker mark itself for deletion
+                # self.sequencer_threadpool.finished.connect(self.sequencer_threadpool.deleteLater)  # have thread mark itself for deletion
                 self.sequencer_threadpool.start()
                 GlobalVariable.sequencer_working = True
                 print("启动sequencer线程完毕")
@@ -1104,6 +1161,11 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         else:
             self.textEdit_message.insertPlainText("无可用终端")
             QtWidgets.QMessageBox.warning(self, "提示", "请打开并连接一个终端", QtWidgets.QMessageBox.Ok)
+    
+    def run_sequence_finished(self):
+        self.sequencer_threadpool.quit
+        self.sequencer_thread.deleteLater
+        self.sequencer_threadpool.deleteLater
 
     def sequencer_receive_data_slot(self, serialobj, data):
         # self.sequencer_thread.main_to_seq_trigger.emit(serialobj, data)
@@ -1120,7 +1182,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         Slot documentation goes here.
         """
         # TODO: not implemented yet
-        raise NotImplementedError
+        pass
     
     @pyqtSlot()
     def on_move_to_previous_section_clicked(self):
@@ -1128,7 +1190,8 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         Slot documentation goes here.
         """
         # TODO: not implemented yet
-        raise NotImplementedError
+        pass
+
     
     @pyqtSlot()
     def on_move_to_next_section_clicked(self):
@@ -1136,7 +1199,8 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         Slot documentation goes here.
         """
         # TODO: not implemented yet
-        raise NotImplementedError
+        pass
+
     
     @pyqtSlot()
     def on_stop_test_sequence_clicked(self):
@@ -1144,7 +1208,7 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         Slot documentation goes here.
         """
         # TODO: not implemented yet
-        raise NotImplementedError
+        pass
     
     @pyqtSlot()
     def on_import_to_sequencer_clicked(self):
@@ -1163,16 +1227,20 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
     def import_file_to_sequencer(self,choosefilename):
         if choosefilename:
             #读取文件
-            self.test_sequence = pd.read_excel(choosefilename, sheet_name = '测试用例')
+            self.test_table = pd.read_excel(choosefilename, sheet_name = '测试用例')
+            # print("测试序列表格是：\r\n",self.test_table)
+            # print("是否测试列：",self.test_table['是否测试'] )
+            # print("发送指令列：",self.test_table['发送指令'] )
+            self.test_sequence = self.test_table[["测试项",'是否测试',"终端名","发送指令","等待回显时间","需匹配文本","不能匹配到文本","执行完是否清空log缓存","单独保存log到文件","说明"]]
             print("测试序列表格是：\r\n",self.test_sequence)
-        #table控件必须要设置行列，添加才会显示
-        self.sequencertable.setRowCount(len(self.test_sequence.index))
-        self.sequencertable.setColumnCount(len(self.test_sequence.columns)-1)
-        print("index:",len(self.test_sequence.index))
-        print("columns:",self.test_sequence.columns) #这个len  columns会多一个
-        for i in range(len(self.test_sequence.index)):
-            for j in range(len(self.test_sequence.columns)-1):
-                self.sequencertable.setItem(i,j,QTableWidgetItem(str(self.test_sequence.iloc[i,j])))
+            #table控件必须要设置行列，添加才会显示
+            self.sequencertable.setRowCount(len(self.test_sequence.index))
+            self.sequencertable.setColumnCount(len(self.test_sequence.columns))
+            # print("index:",len(self.test_sequence.index))
+            # print("columns:",self.test_sequence.columns) #这个len  columns会多一个
+            for i in range(len(self.test_sequence.index)):
+                for j in range(len(self.test_sequence.columns)):
+                    self.sequencertable.setItem(i,j,QTableWidgetItem(str(self.test_sequence.iloc[i,j])))
         
         # print(self.sequencertable.rowCount(),self.sequencertable.columnCount())
 
@@ -1184,12 +1252,44 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
         self.import_file_to_sequencer(self.sequencer_choosefilename)
     
     @pyqtSlot()
-    def on_save_sequence_to_txt_clicked(self):
+    def on_export_sequence_table_clicked(self):
         """
-        Slot documentation goes here.
+        导出当前sequencer 表格
         """
-        # TODO: not implemented yet
-        raise NotImplementedError
+        #读取当前表格
+        tablelist_header = []
+        item_list = []
+        for i in range(int(self.sequencertable.columnCount())):
+            # print("Header:",self.sequencertable.horizontalHeaderItem(i).text())
+            tablelist_header.append(self.sequencertable.horizontalHeaderItem(i).text())
+        
+        tablelist_header.remove("测试项")
+        print("tablelist_header",tablelist_header)
+        for j in range(self.sequencertable.columnCount()-1):
+            for i in range(self.sequencertable.rowCount()):
+                item_list.append(self.sequencertable.item(i,j+1).text())
+            self.test_table[tablelist_header[j]] = item_list
+            item_list = []
+            # item_list.append(self.sequencertable.item(i,0).text())
+        # self.test_table["是否测试"] = item_list
+        #     self.test_table["终端名"] = self.sequencertable.item(i,1).text()
+        #     self.test_table["发送指令"] = self.sequencertable.item(i,2).text()
+        #     self.test_table["等待回显时间"] = self.sequencertable.item(i,3).text()
+        #     self.test_table["需匹配文本"] = self.sequencertable.item(i,4).text()
+        #     self.test_table["不能匹配到文本"] = self.sequencertable.item(i,5).text()
+        #     self.test_table["执行完是否清空log缓存"] = self.sequencertable.item(i,6).text()
+        #     self.test_table["单独保存log到文件"] = self.sequencertable.item(i,7).text()
+        #     self.test_table["备注"] = self.sequencertable.item(i,8).text()
+
+        print("导出表格为：",self.test_table)
+        self.export_name = self.sequencer_choosefilename+"_%d%02d%02d_%d_%02d_%02d"% (datetime.now().year, datetime.now().month, datetime.now().day,datetime.now().hour,datetime.now().minute,datetime.now().second)+".xlsx"
+        self.export_writer = pd.ExcelWriter(self.export_name, engine='xlsxwriter')
+        self.test_table.to_excel(self.export_writer, sheet_name='测试用例',index=False)
+        
+        #可在下面设置表格格式...
+        
+        self.export_writer.save()
+        print("导出表格完成")
 
     @pyqtSlot()
     def on_add_one_row_clicked(self):
@@ -1340,6 +1440,15 @@ class MainWindow(QMainWindow, Ui_MainWindow, MyUi_MainWindow):
             dictdata.update(dict({columnname[i]:cellitem[i]}))
         return dictdata
 
+    def sequencer_thread_choose_file(self):
+        choosefilename, _ = QFileDialog.getOpenFileName(self, "选取文件",QStandardPaths.standardLocations(0)[0],
+                            "Excel Files (*.xlsx *.xls);;All Files (*)")
+        if choosefilename:
+            GlobalVariable.sequencer_choosefilename = choosefilename
+
+        
+        GlobalVariable.sequencer_waiting_for_main = False
+
 
 if __name__ == '__main__':
     
@@ -1347,3 +1456,4 @@ if __name__ == '__main__':
     testCenter = MainWindow()
     testCenter.show()
     sys.exit(app.exec_())
+    

@@ -67,7 +67,7 @@ class LogAnalyzer(QWidget, Ui_loganalyzer):
         savelogfile=open(self.savefilepathname,'a+')
 
         #提取查找到文字的后面第几行： lineEdit_saveline
-        savelinenum=self.lineEdit_saveline.text().split(',')
+        savelinenum = self.lineEdit_saveline.text().split(',')
         savelinenum.sort() 
         print("savelinenum:",savelinenum)
         maximumlinenum=savelinenum[-1]

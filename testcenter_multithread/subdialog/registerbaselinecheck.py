@@ -39,6 +39,7 @@ class RegisterBaseLineCheck(QWidget, Ui_RegisterBaseLineCheck):
 
     def closeEvent(self, event):
         GlobalVariable.openreceivebuffer = False  #关闭串口是关闭 接收log缓存
+        # super(self).closeEvent(parent)
         
     def brosebaselinedir(self):
         # fileName, path = QFileDialog.getOpenFileName(self, "Open File",QCoreApplication.applicationDirPath())
@@ -63,7 +64,7 @@ class RegisterBaseLineCheck(QWidget, Ui_RegisterBaseLineCheck):
         GlobalVariable.Console[index]["consolethread"].send_trigger.emit("insmod /sbin/dram_hwtest.ko\r\n".encode(GlobalVariable.Console[index]["encodingtype"]))
         self.registerbaseline = pd.read_excel(self.choosefilename, sheet_name = '寄存器基线')
         
-        self.all_register_address=self.registerbaseline.loc[:,'寄存器地址'].values
+        self.all_register_address = self.registerbaseline.loc[:,'寄存器地址'].values
         # print("读取指定行的数据：",self.all_register_address)
         GlobalVariable.receivebuffer = b""   #测试前先将接收buffer清空
         

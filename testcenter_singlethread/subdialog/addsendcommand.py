@@ -1,24 +1,22 @@
 # -*- coding: utf-8 -*-
 
 """
-Module implementing SendCommandWidget.
+Module implementing SendCommandDialog.
 """
 
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QDialog,QWidget
+from PyQt5.QtWidgets import QDialog
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 
-
-from subdialog.Ui_addsendcommand import Ui_addsendcommandandwaitingtecho
-
+from subdialog.Ui_addsendcommand import Ui_Dialog
 from globalvariable import GlobalVariable
 
 # from testcommandsessions import testcommandlist  #可以通过这种方法传递列表型全局变量
 # from testcommandsessions import TestCommandSession
 
 
-class AddSendCommandWidgetandWaitingEcho(QWidget, Ui_addsendcommandandwaitingtecho):
+class SendCommandDialog(QDialog, Ui_Dialog):
     """
     Class documentation goes here.
     """
@@ -29,26 +27,19 @@ class AddSendCommandWidgetandWaitingEcho(QWidget, Ui_addsendcommandandwaitingtec
         @param parent reference to the parent widget
         @type QWidget
         """
-        super(AddSendCommandWidgetandWaitingEcho, self).__init__(parent)
-        self.setWindowFlags(self.windowFlags() | QtCore.Qt.Dialog)
+        super(SendCommandDialog, self).__init__(parent)
         self.setupUi(self)
 
     def setMain(self, main_window):
         self.mainwindow=main_window
-
-    @pyqtSlot()
-    def on_checkBox_clicked(self):
-        """
-        Slot documentation goes here.
-        """
-        pass
-
-
+           
+    
     @pyqtSlot()
     def on_pushButton_addTestCommand_clicked(self):
         """
-        Slot documentation goes here.
+        点击添加测试命令到序列
         """
+        
         case_numname="Item_"+str(GlobalVariable.case_num)
         column_num=0
         GlobalVariable.testcommandlist.append("@"+str(GlobalVariable.case_num)+
@@ -80,4 +71,11 @@ class AddSendCommandWidgetandWaitingEcho(QWidget, Ui_addsendcommandandwaitingtec
         print(GlobalVariable.testcommandlist)
         GlobalVariable.case_num+=1
         GlobalVariable.commandlist_num+=1
+        self.close()
+    
+    @pyqtSlot()
+    def on_pushButton_editSendCommand_cancel_clicked(self):
+        """
+        Slot documentation goes here.
+        """
         self.close()

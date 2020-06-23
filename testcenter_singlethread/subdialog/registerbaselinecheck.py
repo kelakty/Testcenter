@@ -3,7 +3,7 @@
 """
 Module implementing RegisterBaseLineCheck.
 """
-from PyQt5 import QtCore
+
 from PyQt5.QtCore import pyqtSlot,QDir,QCoreApplication,QStandardPaths,QByteArray 
 from PyQt5.QtWidgets import QWidget,QFileDialog,QMessageBox
 import pandas as pd
@@ -27,8 +27,6 @@ class RegisterBaseLineCheck(QWidget, Ui_RegisterBaseLineCheck):
         @type QWidget
         """
         super(RegisterBaseLineCheck, self).__init__(parent)
-        self.setWindowFlags(self.windowFlags() | QtCore.Qt.Dialog)  #重要！让窗口置顶显示
-
         self.setupUi(self)
         self.getdata=[]
 
@@ -108,7 +106,7 @@ class RegisterBaseLineCheck(QWidget, Ui_RegisterBaseLineCheck):
         # print(two_dimension_list)
 
         for i in range(len(one_column_list)):
-            string_list=re.split(" |\r\n|\n|/|<|>",one_column_list[i])
+            string_list=re.split(" |\r\n|\n|/",one_column_list[i])
             while '' in string_list:
                 string_list.remove('')
             two_dimension_list.append(string_list) 
@@ -255,7 +253,7 @@ class RegisterBaseLineCheck(QWidget, Ui_RegisterBaseLineCheck):
 
         #生成excel处理
         writer = pd.ExcelWriter(self.gen_filename)
-        self.excel_workbook_format(writer,registerbaseline)  #workbook格式处理
+        self.excel_workboot_format(writer,registerbaseline)  #workbook格式处理
         writer.save()
 
     def generate_baselineexcel(self):
@@ -334,7 +332,7 @@ class RegisterBaseLineCheck(QWidget, Ui_RegisterBaseLineCheck):
             return rStr
 
     #对excel的workbook设置格式
-    def excel_workbook_format(self,writer,registerbaseline):
+    def excel_workboot_format(self,writer,registerbaseline):
 
         # writer = pd.ExcelWriter('C:/Users/seeker/Desktop/M7810C-CM寄存器3.xlsx')
         workbook=writer.book
@@ -394,39 +392,27 @@ class RegisterBaseLineCheck(QWidget, Ui_RegisterBaseLineCheck):
     @pyqtSlot()
     def on_startRegisterBaseLine_Test_clicked(self):
         """
-        点击寄存器基线测试对话框的“开始测试”
+        Slot documentation goes here.
         """
-        try:
-            self.baselinetest()
-            QMessageBox.information(self, '提示','已发送指令到控制台，请查看控制台收发是否正确',QMessageBox.Ok)
-        except Exception as result:
-            print("未知错误%s" % result)
-            QMessageBox.critical(self, '警告','未知错误，请检查表格格式一致后重试。表格sheet页名必须为“寄存器基线”',QMessageBox.Yes)
-        
+        self.baselinetest()
+        QMessageBox.information(self, '提示','已发送指令到控制台，请查看控制台收发是否正确',QMessageBox.Ok)
+    
     @pyqtSlot()
     def on_generateRegisterBaseLineExcel_clicked(self):
         """
-        点击寄存器基线测试对话框的“生成表格”
+        Slot documentation goes here.
         """
-        try:
-            reply=QMessageBox.question(self, '注意','测试前是否已关闭待测试的寄存器基线文档？未关闭会报错',QMessageBox.Yes | QMessageBox.Cancel,QMessageBox.Cancel)
-            # print("接收到的reply：",reply)
-            if reply==QMessageBox.Yes:
-                # print("开始测试")
-                self.generate_baselineexcel()
-                QMessageBox.information(self, '提示','已自动提取寄存器值存入到基线文档，请查看基线文档中寄存器值是否正确',QMessageBox.Yes)
-        except Exception as result:
-            print("未知错误%s" % result)
-            QMessageBox.critical(self, '警告','未知错误，请检查是否关闭表格后重试',QMessageBox.Yes)
+        reply=QMessageBox.question(self, '注意','测试前是否已关闭待测试的寄存器基线文档？未关闭会报错',QMessageBox.Yes | QMessageBox.Cancel,QMessageBox.Cancel)
+        # print("接收到的reply：",reply)
+        if reply==QMessageBox.Yes:
+            # print("开始测试")
+            self.generate_baselineexcel()
+            QMessageBox.information(self, '提示','已自动提取寄存器值存入到基线文档，请查看基线文档中寄存器值是否正确',QMessageBox.Yes)
 
     @pyqtSlot()
     def on_generateRegisterBaseLineReport_clicked(self):
         """
-        点击寄存器基线测试对话框的“使用表格生成报告”.
+        Slot documentation goes here.
         """
-        try:
-            self.generate_baselinereport()
-        except Exception as result:
-            print("未知错误%s" % result)
-            QMessageBox.critical(self, '警告','表格异常，请检查寄存器位组成、寄存器值、实际读出值是否有空单元格，检查是否有隐藏的行列，修改后重试',QMessageBox.Yes)
-
+        self.generate_baselinereport()
+        

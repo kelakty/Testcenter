@@ -136,8 +136,6 @@ class SerialConsoleThread(Console):   #QObject
         datalist.pop()
         for i in datalist:
             self.thread_logger.info(i)
-        # print('%-25s: %s, %s,' % ("AnalyzObject_senddata_slot", QThread.currentThread(), int(QThread.currentThreadId())))
-        # print('%-25s: %s, %s,' % ("AnalyzObject_senddata_slot", threading.current_thread().name, threading.current_thread().ident))
          
     def onReadyRead(self):
         # 数据接收响应

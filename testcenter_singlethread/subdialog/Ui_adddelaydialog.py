@@ -8,7 +8,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-class Ui_AddDelayDialog(QtWidgets.QWidget):
+class Ui_AddDelayDialog(object):
     def setupUi(self, AddDelayDialog):
         AddDelayDialog.setObjectName("AddDelayDialog")
         AddDelayDialog.resize(400, 159)

@@ -1,6 +1,6 @@
 import threading
 from datetime import datetime
-
+import re
 
 # def gendictdata(columnname,cellitem):
 #     """
@@ -119,10 +119,39 @@ from datetime import datetime
 # print(quickcommand_list[len(quickcommand_list)-1])
 
 
-command = 'sh ver\\r\\n'
-print(command.replace("\\r\\n", "\r\n"))   #会报错，原因未知. SyntaxError: EOL while scanning string literal
+# command = 'sh ver\\r\\n'
+# print(command.replace("\\r\\n", "\r\n"))   #会报错，原因未知. SyntaxError: EOL while scanning string literal
 
-command = 0
-command2 = False
-print(int(command) == True)
-print(int(command2) == False)
+# command = 0
+# command2 = False
+# print(int(command) == True)
+# print(int(command2) == False)
+
+# with open("fac_auto_test.txt","a+") as file:
+#     data = file.read()
+# print(data)
+
+# command_name = "RTC时间"
+# send_info = {"0. 设置RTC时间":"2020 12 31 23:59:59","abc":123}
+# # needed_send_command_menu = list(send_info.keys())[list(send_info.keys()).index(command_name)] #不存在会出错
+# # needed_send_command = send_info[needed_send_command_menu]
+# # print(needed_send_command)
+# # print(needed_send_command)
+
+# send_info_key_list = list(send_info.keys())
+# for i in range(len(send_info_key_list)):
+#     if re.findall(command_name,send_info_key_list[i]) != []: 
+#         print(send_info[list(send_info.keys())[i]])
+#         # return list(send_info.keys())[i]
+
+# from datetime import datetime 
+# fac_auto_test_log = open("fac_auto_test.txt","a+")
+
+# #保存失败的log数据
+# print("开始保存失败log信息...")
+# fac_auto_test_log.write(str(datetime.now())+":\r\n")
+# fac_auto_test_log.write("2365df6")
+
+a= ["123","456"]
+b = ["123","456"]
+print(a==b)

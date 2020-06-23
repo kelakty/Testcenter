@@ -1,7 +1,61 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Tasks SYSTEM "Tasks-6.0.dtd">
 <!-- eric6 tasks file for project testcenter -->
-<!-- Saved: 2020-01-09, 15:46:40 -->
+<!-- Saved: 2020-06-23, 16:35:54 -->
 <Tasks version="6.0">
   <ProjectScanFilter></ProjectScanFilter>
+  <Task priority="1" completed="False" type="1" uid="{5a9a1785-f8ce-421e-9e62-5980b3233012}">
+    <Summary>TODO:后续需要删除</Summary>
+    <Description></Description>
+    <Created>2020-06-18, 17:49:09</Created>
+    <Resource>
+      <Filename>mainwindow.py</Filename>
+      <Linenumber>379</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" type="1" uid="{93e46bd4-d197-4630-aca2-517a5ab3254c}">
+    <Summary>TODO:后续需要删除</Summary>
+    <Description></Description>
+    <Created>2020-06-18, 17:49:09</Created>
+    <Resource>
+      <Filename>mainwindow.py</Filename>
+      <Linenumber>383</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" type="1" uid="{21adee6e-b8c0-4503-968f-82f1fbf3f9af}">
+    <Summary>TODO: not implemented yet</Summary>
+    <Description></Description>
+    <Created>2020-06-18, 17:49:09</Created>
+    <Resource>
+      <Filename>mainwindow.py</Filename>
+      <Linenumber>1123</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" type="1" uid="{9968c760-7c6f-4791-9316-89299b0a0eb8}">
+    <Summary>TODO: not implemented yet</Summary>
+    <Description></Description>
+    <Created>2020-06-18, 17:49:09</Created>
+    <Resource>
+      <Filename>mainwindow.py</Filename>
+      <Linenumber>1131</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" type="1" uid="{e8a626e5-d57b-421d-846a-3b4a986d4f6d}">
+    <Summary>TODO: not implemented yet</Summary>
+    <Description></Description>
+    <Created>2020-06-18, 17:49:09</Created>
+    <Resource>
+      <Filename>mainwindow.py</Filename>
+      <Linenumber>1139</Linenumber>
+    </Resource>
+  </Task>
+  <Task priority="1" completed="False" type="1" uid="{70e3e24c-89bb-425e-aadb-1c0e1464b82d}">
+    <Summary>TODO: not implemented yet</Summary>
+    <Description></Description>
+    <Created>2020-06-18, 17:49:09</Created>
+    <Resource>
+      <Filename>mainwindow.py</Filename>
+      <Linenumber>1147</Linenumber>
+    </Resource>
+  </Task>
 </Tasks>

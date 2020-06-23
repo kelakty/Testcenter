@@ -1,15 +1,13 @@
 #全局变量存放
 import os
-from PyQt5.QtCore import QByteArray
 class GlobalVariable():
     defaultEncodingType='utf-8'    #配置默认控制台发送编码方式
     encodingType='utf-8'
     testcommandlist = []
     commandlist_num=0
     case_num=0
-    receivebuffer=QByteArray(b'')
-    serialreaddata=QByteArray(b'')
-    mainwindow=object()
+    receivebuffer=b''
+    serialreaddata=b''
 
     #quickcommand
     quickcommand_number=0

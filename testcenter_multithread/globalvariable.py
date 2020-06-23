@@ -57,12 +57,20 @@ class GlobalVariable():
     waiting_to_send = {}
     waiting_to_receive = {}
 
+    #用于log识别的log缓存
     log_data_buffer = ""
 
     #测试序列的用例表格字典列表
     table_dict_list = []
     #表示sequencer线程是否在执行
     sequencer_working = False
+    fac_auto_quick_test_working = False
+
+    #sequencer等待main运行结束再执行下面的程序
+    sequencer_waiting_for_main = False
+    sequencer_choosefilename = ""
 
     #消极的词汇
     negative_vocabulary = ["fail","故障","失败","不在位","N/A","NA"]
+
+    

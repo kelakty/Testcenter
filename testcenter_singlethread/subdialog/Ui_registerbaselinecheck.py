@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'd:\testcenter20190116备份（增加qtextedit中进行发送命令）\testcenter20190102备份\testcenter\testcenter_pyqt5 - 副本\subdialog\registerbaselinecheck.ui'
+# Form implementation generated from reading ui file 'd:\testcenter20190116备份（增加qtextedit中进行发送命令）\testcenter20190102备份\testcenter\testcenter_pyqt5\subdialog\registerbaselinecheck.ui'
 #
 # Created by: PyQt5 UI code generator 5.11.3
 #
@@ -36,7 +36,7 @@ class Ui_RegisterBaseLineCheck(object):
 
     def retranslateUi(self, RegisterBaseLineCheck):
         _translate = QtCore.QCoreApplication.translate
-        RegisterBaseLineCheck.setWindowTitle(_translate("RegisterBaseLineCheck", "寄存器基线测试"))
+        RegisterBaseLineCheck.setWindowTitle(_translate("RegisterBaseLineCheck", "Form"))
         self.pushButton_browse_RBL_dir.setText(_translate("RegisterBaseLineCheck", "browse"))
         self.label.setText(_translate("RegisterBaseLineCheck", "请选择寄存器基线文件路径："))
         self.startRegisterBaseLine_Test.setText(_translate("RegisterBaseLineCheck", "开始测试"))

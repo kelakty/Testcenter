@@ -39,7 +39,7 @@ class TestCommandSession():
                 # self.mainwindow._serial.write("\r\n".encode(GlobalVariable.encodingType))
             else :
                 print("未发现测试命令")
-  
+
         
     def addcommandtolist(self,testcommand):
         #添加测试命令到测试命令序列

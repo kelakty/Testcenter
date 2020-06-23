@@ -1,13 +1,5 @@
 <RCC>
   <qresource prefix="Graphics">
-    <file>images/success.jpg</file>
-    <file>images/fail.jpg</file>
-    <file>images/waittotest.jpg</file>
-    <file>images/start.bmp</file>
-    <file>images/laststep.bmp</file>
-    <file>images/nextstep.bmp</file>
-    <file>images/pause.bmp</file>
-    <file>images/stop.png</file>
     <file>images/addquickcommand.jpg</file>
     <file>images/AddTest.jpg</file>
     <file>images/AI.bmp</file>
