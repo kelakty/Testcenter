@@ -170,6 +170,7 @@
      </widget>
      <addaction name="action11_X_main_program"/>
      <addaction name="action12_X_main_program"/>
+     <addaction name="action12_X_factory_auto_test"/>
      <addaction name="menuSIT_TEST"/>
      <addaction name="menuRegister_Test"/>
     </widget>
@@ -952,7 +953,7 @@ selection-color: qconicalgradient(cx:0, cy:0, angle:135, stop:0 rgba(255, 255, 0
           </widget>
          </item>
          <item>
-          <widget class="QToolButton" name="save_sequence_to_txt">
+          <widget class="QToolButton" name="export_sequence_table">
            <property name="enabled">
             <bool>true</bool>
            </property>
@@ -1059,6 +1060,11 @@ background-color: rgb(174, 255, 188);</string>
        <widget class="QTableWidget" name="sequencertable">
         <column>
          <property name="text">
+          <string>测试项</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
           <string>是否测试</string>
          </property>
         </column>
@@ -1099,17 +1105,7 @@ background-color: rgb(174, 255, 188);</string>
         </column>
         <column>
          <property name="text">
-          <string>生成报告文件</string>
-         </property>
-        </column>
-        <column>
-         <property name="text">
           <string>说明</string>
-         </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>备注</string>
          </property>
         </column>
        </widget>
@@ -1295,7 +1291,7 @@ background-color: rgb(174, 255, 188);</string>
    <property name="minimumSize">
     <size>
      <width>200</width>
-     <height>0</height>
+     <height>93</height>
     </size>
    </property>
    <property name="floating">
@@ -1407,7 +1403,7 @@ background-color: rgb(174, 255, 188);</string>
   </action>
   <action name="actionContactUs">
    <property name="text">
-    <string>联系我们</string>
+    <string>关于...</string>
    </property>
   </action>
   <action name="menuComSearch">
@@ -1601,6 +1597,10 @@ background-color: rgb(174, 255, 188);</string>
    </property>
   </action>
   <action name="actionStartSession">
+   <property name="icon">
+    <iconset resource="iconresource.qrc">
+     <normaloff>:/Graphics/images/start.bmp</normaloff>:/Graphics/images/start.bmp</iconset>
+   </property>
    <property name="text">
     <string>开始队列测试</string>
    </property>
@@ -1656,11 +1656,19 @@ background-color: rgb(174, 255, 188);</string>
    </property>
   </action>
   <action name="actionStop_Test">
+   <property name="icon">
+    <iconset resource="iconresource.qrc">
+     <normaloff>:/Graphics/images/stop.png</normaloff>:/Graphics/images/stop.png</iconset>
+   </property>
    <property name="text">
     <string>终止测试</string>
    </property>
   </action>
   <action name="actionPause_Test">
+   <property name="icon">
+    <iconset resource="iconresource.qrc">
+     <normaloff>:/Graphics/images/pause.bmp</normaloff>:/Graphics/images/pause.bmp</iconset>
+   </property>
    <property name="text">
     <string>暂停测试</string>
    </property>
@@ -1757,6 +1765,11 @@ background-color: rgb(174, 255, 188);</string>
    </property>
    <property name="text">
     <string>显示通知消息区</string>
+   </property>
+  </action>
+  <action name="action12_X_factory_auto_test">
+   <property name="text">
+    <string>12.X生测自动测试</string>
    </property>
   </action>
   <zorder>message_dockwidget</zorder>
